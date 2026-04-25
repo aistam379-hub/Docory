@@ -1,0 +1,3277 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0, maximum-scale=1.0, user-scalable=yes" />
+  <title>لوحة الطبيب - النسخة النهائية</title>
+  <meta name="theme-color" content="#0d9488" />
+  
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&family=IBM+Plex+Sans+Arabic:wght@400;500;600&family=DM+Mono:wght@400;500&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-app.js";
+    import {
+      getFirestore, collection, doc, getDoc, setDoc, updateDoc, deleteDoc,
+      onSnapshot, serverTimestamp
+    } from "https://www.gstatic.com/firebasejs/11.0.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyA4zONfF5nr4PVR7pHa62dmRfbS0cBaT4I",
+      authDomain: "docboook-e8c3f.firebaseapp.com",
+      projectId: "docboook-e8c3f",
+      storageBucket: "docboook-e8c3f.firebasestorage.app",
+      messagingSenderId: "120265127885",
+      appId: "1:120265127885:web:6bf34e70308de0706ff684"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db  = getFirestore(app);
+
+    window.__db = db;
+    window.__fbFns = { collection, doc, getDoc, setDoc, updateDoc, deleteDoc, onSnapshot, serverTimestamp };
+    window.__fbReady = true;
+    document.dispatchEvent(new Event('firebase-ready'));
+  </script>
+
+  <!-- Google APIs -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <script src="https://apis.google.com/js/api.js" async defer></script>
+  
+  <style>
+    :root {
+      --bg:        #f0fdfa;
+      --surface:   #ffffff;
+      --border:    #b2f5ea;
+      --border-strong: #81e6d9;
+
+      --primary:        #0d9488;
+      --primary-hover:  #0f766e;
+      --primary-light:  #ccfbf1;
+      --primary-faint:  #f0fdfa;
+
+      --primary-1: #f0fdfa; --primary-2: #ccfbf1; --primary-3: #5eead4; --primary-4: #2dd4bf;
+      --primary-5: #14b8a6; --primary-6: #0d9488; --primary-7: #0f766e; --primary-8: #115e59;
+      --primary-9: #134e4a; --primary-10: #042f2e;
+
+      --glass-bg: rgba(255,255,255,0.7); --glass-border: #b2f5ea; --glass-hover: rgba(204,251,241,0.6);
+
+      --text-primary: #134e4a; --text-secondary: #1a5f59; --text-muted: #5f9ea0;
+
+      --red:       #dc2626; --red-light: #fee2e2;
+      --green:     #16a34a; --green-light:#dcfce7;
+      --amber:     #d97706; --amber-light:#fef3c7;
+      --blue:      #2563eb;
+
+      --radius:    14px;
+      --radius-sm: 14px;
+      --radius-lg: 20px;
+      --border-radius: 20px; --card-padding: 20px;
+
+      --shadow-sm: 0 1px 4px rgba(13,148,136,.07);
+      --shadow:    0 2px 12px rgba(13,148,136,.10);
+      --shadow-md: 0 4px 24px rgba(13,148,136,.13);
+      --shadow-lg: 0 8px 40px rgba(13,148,136,.16);
+    }
+
+    body {
+      font-family: 'Tajawal', 'IBM Plex Sans Arabic', sans-serif;
+      background: var(--bg);
+      color: var(--text-primary);
+      min-height: 100vh;
+      margin: 0;
+      padding-bottom: 70px;
+    }
+
+    .orb { display: none; }
+
+    .glass-card {
+      background: var(--surface) !important;
+      border: 1.5px solid var(--border) !important;
+      border-radius: var(--border-radius);
+      padding: var(--card-padding);
+      transition: border-color .2s, box-shadow .2s;
+      position: relative;
+      box-shadow: var(--shadow-sm);
+    }
+    .glass-card:hover { box-shadow: var(--shadow) !important; border-color: var(--border-strong) !important; }
+
+    /* تأثير Fade In للبطاقات في قسم الإحصائيات */
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      0% { opacity: 0; transform: translateY(10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .sidebar {
+      width: 200px;
+      height: fit-content;
+      position: sticky;
+      top: 80px;
+      display: none;
+      flex-direction: column;
+      gap: 6px;
+    }
+    @media (min-width: 768px) {
+      .sidebar { display: flex; }
+      body { padding-bottom: 0; }
+    }
+
+    .sidebar-item { 
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: transparent;
+      border: 1.5px solid transparent;
+      cursor: pointer;
+      transition: all 0.18s;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.88rem;
+    }
+    .sidebar-item p { color: var(--text-muted); font-size: 0.72rem; font-weight: 400; margin-top: 1px; }
+    .sidebar-item:hover { background: var(--primary-light); color: var(--primary); border-color: var(--border); transform: none; }
+    .sidebar-item.active { background: var(--primary); color: white; border-color: transparent; box-shadow: var(--shadow); }
+    .sidebar-item.active h3 { color: white !important; }
+    .sidebar-item.active p { color: rgba(255,255,255,.75) !important; }
+    .sidebar-icon { width: 34px; height: 34px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; background: rgba(255,255,255,.15); flex-shrink: 0; }
+    .sidebar-item:not(.active) .sidebar-icon { background: var(--primary-faint); color: var(--primary); }
+
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--surface);
+      border-top: 1.5px solid var(--border);
+      box-shadow: 0 -4px 20px rgba(0,0,0,.06);
+      display: flex;
+      height: 64px;
+      z-index: 50;
+    }
+    @media (min-width: 768px) {
+      .bottom-nav { display: none; }
+    }
+    .bottom-nav-item {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      color: var(--text-muted);
+      font-size: 0.65rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: color .15s;
+    }
+    .bottom-nav-item i { font-size: 1.1rem; }
+    .bottom-nav-item.active { color: var(--primary); background: transparent; }
+    .bottom-nav-item.active i {
+      background: var(--primary-light);
+      padding: 6px 16px;
+      border-radius: 30px;
+      color: var(--primary);
+    }
+
+    @media (max-width: 640px) {
+      .compact-calendar-grid { gap: 2px; }
+      .compact-calendar-day { font-size: 0.7rem; padding: 6px 1px; }
+      .patient-card { padding: 12px; }
+      .btn-primary, .btn-secondary { padding: 8px 12px; font-size: 0.8rem; }
+      .glass-card { padding: 16px; }
+    }
+
+    .compact-calendar-container { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--border-radius); padding: 18px; box-shadow: var(--shadow-sm); }
+    .compact-calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+    .compact-calendar-day { 
+      padding: 8px 2px; 
+      border-radius: 9px; 
+      cursor: pointer; 
+      transition: all 0.15s; 
+      border: 1.5px solid transparent; 
+      background: transparent; 
+      color: var(--text-secondary); 
+      position: relative;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+    .compact-calendar-day:not(.past-day):hover { 
+      background: var(--primary-light); 
+      border-color: var(--border-strong);
+    }
+    .compact-calendar-day.today { color: var(--primary); border-color: var(--primary); font-weight: 800; }
+    .compact-calendar-day.selected { background: var(--primary) !important; color: white !important; border-color: transparent !important; box-shadow: var(--shadow); }
+    .compact-calendar-day.past-day { opacity: 0.38; cursor: pointer; }
+    .compact-calendar-day.past-day:hover { opacity: 0.7; background: var(--bg); border-color: var(--border); }
+    .compact-calendar-day.past-day.selected { opacity: 1; }
+    .compact-calendar-day.other-month { opacity: 0.2; }
+    .compact-calendar-day.closed-day {
+      background: var(--red-light);
+      border-color: #fca5a5;
+      color: var(--red);
+    }
+    .density-legend { display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 0.68rem; color: var(--text-muted); margin-top: 4px; }
+    .compact-appointment-dot { position: absolute; top: 3px; right: 3px; width: 6px; height: 6px; border-radius: 50%; }
+    .compact-dot-low { background: #16a34a; }
+    .compact-dot-medium { background: #d97706; }
+    .compact-dot-high { background: #dc2626; }
+
+    .patient-card { background: var(--surface); border: 1.5px solid var(--border); border-radius: var(--radius); padding: 16px; transition: border-color .2s, box-shadow .2s; }
+    .patient-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+    .patient-name { font-size: 1rem; font-weight: 700; color: var(--text); }
+    .patient-phone { color: var(--primary); font-size: 0.85rem; margin-top: 3px; }
+    .patient-phone i { margin-left: 4px; }
+    .patient-actions { display: flex; gap: 8px; margin-top: 12px; }
+    .patient-action-btn {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      text-align: center;
+      cursor: pointer;
+      border: none;
+      font-family: inherit;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      transition: opacity .15s;
+    }
+    .patient-action-btn:hover { opacity: .88; }
+    .patient-action-btn.primary { background: var(--primary); color: white; }
+    .patient-action-btn.secondary { background: #64748b !important; color: white !important; }
+    .patient-action-btn.danger    { background: var(--red) !important; color: white !important; }
+
+    .btn-primary { background: var(--primary); color: white; border: none; border-radius: 10px; padding: 10px 20px; font-weight: 700; font-family: inherit; cursor: pointer; transition: background .15s, transform .1s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-primary:active { transform: scale(.98); }
+    .btn-secondary { background: #e2e8f0 !important; color: #475569 !important; border: none; border-radius: 10px; padding: 10px 20px; font-weight: 700; font-family: inherit; cursor: pointer; transition: background .15s; display: inline-flex; align-items: center; gap: 6px; }
+    .btn-secondary:hover { background: #cbd5e1 !important; }
+
+    .modal-overlay { background: rgba(13, 148, 136, 0.15); backdrop-filter: blur(4px); }
+    .modal-content { background: var(--surface); border: 1.5px solid var(--border); border-radius: 20px; max-width: 90%; margin: 0 auto; box-shadow: var(--shadow-lg); }
+    @media (max-width: 640px) {
+      .modal-content { max-width: 95%; padding: 16px; }
+    }
+
+    /* Proper modal visibility control */
+    .modal-hidden { display: none !important; }
+    .modal-visible { display: flex !important; }
+
+    .nurse-header-sub { font-family: 'Tajawal', sans-serif; font-weight: 400; color: var(--text-muted); font-size: 0.7rem; }
+
+    /* Stat cards grid — 2 cols mobile, 4 cols desktop */
+    #statsSection .grid.grid-cols-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+    }
+    @media (min-width: 1024px) {
+      #statsSection .grid.grid-cols-2 { grid-template-columns: repeat(4, 1fr); }
+    }
+
+    /* Donuts grid — stack on mobile, side by side on md+ */
+    #donutsGrid {
+      grid-template-columns: 1fr;
+    }
+    @media (min-width: 640px) {
+      #donutsGrid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (min-width: 1024px) {
+      #donutsGrid { grid-template-columns: repeat(3, 1fr); }
+    }
+
+    #dayDetailsContent .text-gray-400  { color: var(--text-muted) !important; }
+    #dayDetailsContent .text-white     { color: var(--text-primary) !important; }
+    #dayDetailsContent .bg-primary-5\/10 { background: var(--primary-light) !important; }
+    #dayDetailsContent .bg-red-500\/20  { background: var(--red-light) !important; }
+
+    .stat-icon { width: 48px; height: 48px; border-radius: 13px; display: flex; align-items: center; justify-content: center; background: var(--primary-light); border: 1.5px solid var(--border); flex-shrink: 0; }
+    .stat-icon i { font-size: 1.4rem; color: var(--primary); }
+    .stat-value { font-family: 'DM Mono', monospace; font-size: 2rem; font-weight: 700; color: var(--text-primary); line-height: 1.1; margin-top: 8px; }
+    .stat-value-small { font-family: 'DM Mono', monospace; font-size: 1.6rem; font-weight: 700; color: var(--text-primary); line-height: 1.1; margin-top: 8px; }
+    @media (max-width: 640px) {
+      .stat-value { font-size: 1.6rem; }
+      .stat-value-small { font-size: 1.3rem; }
+    }
+
+    .stack-bar {
+      width: 100%;
+      height: 24px;
+      background-color: var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+      display: flex;
+    }
+    .stack-bar .morning-part { background-color: #fbbf24; height: 100%; transition: width 0.5s; }
+    .stack-bar .evening-part { background-color: #3b82f6; height: 100%; transition: width 0.5s; }
+
+    .action-btn-large {
+      width: 36px;
+      height: 36px;
+      border-radius: 9px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      transition: transform .15s, opacity .15s;
+      color: white;
+      flex-shrink: 0;
+    }
+    .action-btn-large:hover { transform: scale(1.08); opacity: .9; }
+    .action-btn-large.whatsapp-btn { background: #25D366 !important; }
+    .action-btn-large.call-btn { background: var(--blue) !important; }
+
+    .action-btn-small {
+      width: 32px;
+      height: 32px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 0.9rem;
+      transition: transform .15s, opacity .15s;
+      flex-shrink: 0;
+    }
+    .action-btn-small:hover { transform: scale(1.08); opacity: .9; }
+    .whatsapp-btn { background: #25D366 !important; }
+    .call-btn     { background: var(--blue) !important; }
+
+    .day-status-badge {
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: 700;
+    }
+    .day-status-badge.open {
+      background: var(--green-light);
+      color: var(--green);
+      border: 1px solid #86efac;
+    }
+    .day-status-badge.closed {
+      background: var(--red-light);
+      color: var(--red);
+      border: 1px solid #fca5a5;
+    }
+
+    .scrollable-visits {
+      max-height: 230px;
+      overflow-y: auto;
+    }
+    .scrollable-visits table { width: 100%; font-size: 0.82rem; border-collapse: collapse; }
+    .scrollable-visits th { color: var(--text-muted); font-weight: 700; padding: 6px 8px; border-bottom: 1.5px solid var(--border); text-align: right; }
+    .scrollable-visits td { padding: 7px 8px; border-bottom: 1px solid var(--bg); color: var(--text-primary); }
+    .scrollable-visits tr:last-child td { border-bottom: none; }
+    table th { color: var(--text-muted) !important; }
+    table td { color: var(--text-primary) !important; }
+
+    .note-content {
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      max-height: 300px;
+      overflow-y: auto;
+      background: var(--primary-faint);
+      padding: 12px;
+      border-radius: 12px;
+    }
+
+    .chart-container {
+      height: 240px;
+      position: relative;
+      display: flex;
+      min-width: 480px;
+    }
+    .chart-y-axis {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: 16px 0;
+      padding-right: 10px;
+      text-align: right;
+    }
+    .y-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 10px;
+      color: var(--text-muted);
+    }
+    .chart-placeholder {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 8px;
+      padding: 16px 0;
+      border-right: 1.5px solid var(--border);
+      padding-right: 10px;
+    }
+    [dir="rtl"] .chart-placeholder { border-right: none; border-left: 1.5px solid var(--border); padding-right: 0; padding-left: 10px; }
+    .chart-bar-group {
+      flex: 1;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      cursor: pointer;
+    }
+    .chart-bar {
+      width: 100%;
+      max-width: 38px;
+      border-radius: 6px 6px 0 0;
+      transition: height .6s cubic-bezier(.4,0,.2,1), filter .15s;
+      min-height: 8px;
+      background: linear-gradient(180deg, var(--primary), var(--primary-hover));
+    }
+    .chart-bar:hover { filter: brightness(1.1); }
+    .chart-label { font-size: 10px; color: var(--text-muted); font-weight: 600; }
+    .card-actions { display: flex; gap: 8px; }
+    .card-btn {
+      padding: 7px 14px;
+      background: var(--bg);
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      color: var(--text-muted);
+      font-family: inherit;
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .card-btn:hover, .card-btn.active { background: var(--primary-light); border-color: var(--primary); color: var(--primary); }
+
+    /* Card structure — unified with nurse dashboard */
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      gap: 12px;
+    }
+    .card-title-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 11px;
+      background: var(--primary-light);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .card-title {
+      font-weight: 700;
+      font-size: 0.95rem;
+      color: var(--text-primary);
+      line-height: 1.2;
+    }
+    .card-subtitle {
+      font-size: 0.72rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    .card-badge {
+      background: var(--primary-light);
+      color: var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .action-icon { color: white !important; }
+
+    /* أزرار الإجراءات */
+    .btn-icon-only {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.2rem;
+      transition: all 0.2s;
+      background: var(--primary);
+      border: none;
+      color: white;
+      cursor: pointer;
+    }
+    .btn-icon-only:hover { transform: scale(1.08); box-shadow: var(--shadow-md); background: var(--primary-hover); }
+
+    /* زر عرض تفاصيل اليوم - نفس تصميم الممرضة */
+    .btn-show-details {
+      background: transparent !important;
+      color: var(--text-muted) !important;
+      border: none !important;
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 6px;
+      border-radius: 8px;
+      transition: all .15s;
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .btn-show-details:hover {
+      color: var(--primary) !important;
+      background: var(--primary-light) !important;
+      transform: none;
+      box-shadow: none;
+    }
+
+    /* بطاقات الإحصائيات - نفس تصميم ملف الممرضة */
+    .stat-card {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: 20px;
+      padding: 18px;
+      cursor: pointer;
+      transition: box-shadow .2s, border-color .2s;
+    }
+    .stat-card:hover { border-color: var(--primary); box-shadow: var(--shadow); }
+
+    .stat-card.cancelled-shadow {
+      background: #fee2e2 !important;
+      border-color: #fca5a5 !important;
+    }
+    .stat-card.cancelled-shadow .stat-icon {
+      background: rgba(220,38,38,.1) !important;
+      border-color: #fca5a5 !important;
+    }
+    .stat-card.cancelled-shadow .stat-icon i { color: #dc2626 !important; }
+
+    .stat-card.repeat-shadow {
+      background: #dcfce7 !important;
+      border-color: #86efac !important;
+    }
+    .stat-card.repeat-shadow .stat-icon {
+      background: rgba(22,163,74,.1) !important;
+      border-color: #86efac !important;
+    }
+    .stat-card.repeat-shadow .stat-icon i { color: #16a34a !important; }
+
+    /* Fix remaining Tailwind classes */
+    .text-primary-3 { color: var(--primary) !important; }
+    .bg-primary-5 { background: var(--primary) !important; }
+    .border-white\/10 { border-color: var(--border) !important; }
+
+    /* زر الإعدادات */
+    .settings-btn {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--text-muted);
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all .2s;
+    }
+    .settings-btn:hover {
+      background: var(--primary-light);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    /* form inputs للإعدادات */
+    .form-label { display:block; font-weight:700; font-size:.85rem; margin-bottom:6px; color:var(--text-primary); }
+    .form-input { width:100%; padding:10px 14px; border:1.5px solid var(--border); border-radius:10px; font-family:inherit; font-size:.88rem; color:var(--text-primary); background:var(--surface); outline:none; transition:border-color .15s, box-shadow .15s; }
+    .form-input:focus { border-color:var(--primary); box-shadow:0 0 0 3px rgba(13,148,136,.12); }
+
+    /* رابط الهيدر */
+    .header-link {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .header-link:hover {
+      opacity: 0.8;
+      transform: scale(0.98);
+    }
+
+    /* لوحة تنبيه الممرضة */
+    .nurse-alert-panel {
+      background: var(--surface);
+      border: 1.5px solid var(--border);
+      border-radius: var(--border-radius);
+      padding: 16px 20px;
+      box-shadow: var(--shadow-sm);
+    }
+    .nurse-alert-btns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+    }
+    @media (max-width: 480px) { .nurse-alert-btns { grid-template-columns: 1fr; } }
+
+    .alert-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      padding: 14px 10px;
+      border-radius: 14px;
+      border: 2px solid transparent;
+      cursor: pointer;
+      font-family: inherit;
+      font-weight: 700;
+      font-size: .82rem;
+      transition: all .15s;
+      line-height: 1.3;
+    }
+    .alert-btn:active { transform: scale(.96); }
+    .alert-btn i { font-size: 1.4rem; }
+    .alert-btn-next  { background:#ecfdf5; border-color:#6ee7b7; color:#065f46; }
+    .alert-btn-next:hover  { background:#d1fae5; border-color:#34d399; box-shadow:0 4px 16px rgba(16,185,129,.2); }
+    .alert-btn-enter { background:#eff6ff; border-color:#93c5fd; color:#1e40af; }
+    .alert-btn-enter:hover { background:#dbeafe; border-color:#60a5fa; box-shadow:0 4px 16px rgba(59,130,246,.2); }
+    .alert-btn-custom { background:#fefce8; border-color:#fde047; color:#713f12; }
+    .alert-btn-custom:hover { background:#fef9c3; border-color:#facc15; box-shadow:0 4px 16px rgba(234,179,8,.2); }
+    .alert-btn-flash { animation: btnFlash .35s ease; }
+    @keyframes btnFlash { 0%{filter:brightness(1)} 50%{filter:brightness(1.35)} 100%{filter:brightness(1)} }
+
+
+
+    /* مودال تخصيص الزر الثالث */
+    .custom-edit-hint { font-size:.7rem; color:var(--text-muted); margin-top:4px; font-weight:500; }
+
+    /* ============================================================
+       FAB SPEED DIAL — Doctor Panel
+       ============================================================ */
+    #docFabBackdrop { display:none; position:fixed; inset:0; z-index:290; }
+    #docFabBackdrop.active { display:block; }
+
+    /* زر الزائد الرئيسي */
+    .doc-fab-trigger {
+      width: 58px; height: 58px; border-radius: 50%;
+      background: linear-gradient(145deg, #0fb8aa 0%, #0d9488 50%, #0a7a70 100%);
+      border: none; color: white; cursor: grab;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 6px 24px rgba(13,148,136,.45), 0 2px 8px rgba(13,148,136,.25), inset 0 1px 0 rgba(255,255,255,.2);
+      transition: box-shadow .2s ease; outline: none; user-select: none; flex-shrink: 0;
+    }
+    .doc-fab-trigger:hover { box-shadow: 0 10px 32px rgba(13,148,136,.55), 0 3px 10px rgba(13,148,136,.3), inset 0 1px 0 rgba(255,255,255,.2); }
+    .doc-fab-trigger:active { cursor: grabbing; }
+    .doc-fab-plus-icon {
+      position: relative; width: 20px; height: 20px;
+      transition: transform .3s cubic-bezier(.34,1.56,.64,1); flex-shrink: 0;
+    }
+    .doc-fab-plus-icon::before, .doc-fab-plus-icon::after {
+      content: ''; position: absolute; background: white; border-radius: 2px;
+    }
+    .doc-fab-plus-icon::before { width: 20px; height: 2.5px; top: 8.75px; left: 0; }
+    .doc-fab-plus-icon::after  { width: 2.5px; height: 20px; left: 8.75px; top: 0; }
+    .doc-fab-trigger.open .doc-fab-plus-icon { transform: rotate(45deg); }
+
+    /* Pill */
+    .doc-fab-pill {
+      display: flex; align-items: center; gap: 10px;
+      background: white; border-radius: 999px; border: none;
+      padding: 8px 18px 8px 8px;
+      box-shadow: 0 4px 18px rgba(0,0,0,.12), 0 1px 4px rgba(0,0,0,.07);
+      cursor: pointer; white-space: nowrap; font-family: inherit;
+      opacity: 0; pointer-events: none;
+      transform: translateY(8px) scale(.95);
+      transition: opacity .22s ease, transform .28s cubic-bezier(.34,1.56,.64,1), box-shadow .18s ease;
+    }
+    .doc-fab-pill:hover { box-shadow: 0 6px 22px rgba(0,0,0,.16); transform: scale(1.03) !important; }
+    .doc-fab-pill.visible { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+    .doc-fab-pill-icon {
+      width: 36px; height: 36px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0; color: white; font-size: 1rem;
+    }
+    .doc-fab-pill-icon.next-p  { background: linear-gradient(135deg,#059669,#065f46); }
+    .doc-fab-pill-icon.enter-p { background: linear-gradient(135deg,#2563eb,#1e40af); }
+    .doc-fab-pill-icon.custom-p{ background: linear-gradient(135deg,#f59e0b,#d97706); }
+    .doc-fab-pill-label { font-size: .85rem; font-weight: 700; color: #1e293b; }
+    .doc-fab-pill-sublabel { font-size: .7rem; color: #64748b; margin-right: 2px; }
+
+    /* Desktop */
+    #docDesktopSpeedDial {
+      position: fixed; bottom: 36px; left: 36px; z-index: 310;
+      display: none;
+    }
+    #docDesktopPills {
+      position: fixed; z-index: 320;
+      display: flex; flex-direction: column; gap: 10px;
+      pointer-events: none;
+    }
+    #docDesktopPills .doc-fab-pill:nth-child(1) { transition-delay: .10s; }
+    #docDesktopPills .doc-fab-pill:nth-child(2) { transition-delay: .05s; }
+    #docDesktopPills .doc-fab-pill:nth-child(3) { transition-delay: .00s; }
+
+    /* Mobile FAB في ناف بار */
+    .mob-doc-fab-container {
+      position: relative; flex: 0 0 64px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    #mobDocFabTrigger {
+      position: absolute; bottom: 8px; z-index: 10; cursor: pointer !important;
+      width: 46px !important; height: 46px !important;
+    }
+    #mobDocPills {
+      position: fixed;
+      display: flex; flex-direction: column; gap: 10px; align-items: flex-start;
+      pointer-events: none; z-index: 320;
+    }
+    #mobDocPills.active .doc-fab-pill { opacity: 1; pointer-events: auto; transform: translateY(0) scale(1); }
+    #mobDocPills.active .doc-fab-pill:nth-child(1) { transition-delay: .10s; }
+    #mobDocPills.active .doc-fab-pill:nth-child(2) { transition-delay: .05s; }
+    #mobDocPills.active .doc-fab-pill:nth-child(3) { transition-delay: .00s; }
+
+
+  /* ============================================================
+     LOGIN PAGE OVERLAY — DOCTOR
+     ============================================================ */
+  #loginOverlay {
+    position: fixed; inset: 0; z-index: 9999;
+    font-family: 'Tajawal', 'IBM Plex Sans Arabic', sans-serif;
+    background: #042f2e; color: #f0fdfa;
+    display: flex; align-items: center; justify-content: center; padding: 24px;
+    overflow: hidden;
+  }
+  #loginOverlay.hidden { display: none; }
+  .ln-scene { position:absolute; inset:0; overflow:hidden; pointer-events:none; }
+  .ln-scene::before {
+    content:''; position:absolute; inset:0;
+    background:
+      radial-gradient(ellipse 60% 80% at 50% -10%, rgba(13,148,136,0.22) 0%, transparent 70%),
+      radial-gradient(ellipse 40% 40% at 20% 80%, rgba(9,100,92,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse 30% 50% at 80% 70%, rgba(13,148,136,0.08) 0%, transparent 60%);
+  }
+  .ln-streak {
+    display: none;
+  }
+  .ln-streak:nth-child(1){left:10%;animation-duration:4.2s;animation-delay:0s;height:55%;}
+  .ln-streak:nth-child(2){left:18%;animation-duration:3.8s;animation-delay:1.2s;height:70%;}
+  .ln-streak:nth-child(3){left:27%;animation-duration:5.1s;animation-delay:0.5s;height:45%;}
+  .ln-streak:nth-child(4){left:35%;animation-duration:4.5s;animation-delay:2.1s;height:60%;}
+  .ln-streak:nth-child(5){left:43%;animation-duration:3.5s;animation-delay:0.8s;height:80%;}
+  .ln-streak:nth-child(6){left:52%;animation-duration:4.8s;animation-delay:1.7s;height:50%;}
+  .ln-streak:nth-child(7){left:61%;animation-duration:3.9s;animation-delay:0.3s;height:65%;}
+  .ln-streak:nth-child(8){left:70%;animation-duration:4.3s;animation-delay:2.5s;height:55%;}
+  .ln-streak:nth-child(9){left:79%;animation-duration:5.2s;animation-delay:1.0s;height:72%;}
+  .ln-streak:nth-child(10){left:88%;animation-duration:3.7s;animation-delay:0.6s;height:48%;}
+  .ln-streak:nth-child(11){left:5%;animation-duration:4.9s;animation-delay:3.1s;height:62%;}
+  .ln-streak:nth-child(12){left:94%;animation-duration:4.1s;animation-delay:1.9s;height:58%;width:2px;opacity:0.4;}
+  @keyframes lnStreakFall {
+    0%{transform:translateY(0);opacity:0;} 5%{opacity:1;} 90%{opacity:0.8;} 100%{transform:translateY(130vh);opacity:0;}
+  }
+  .ln-noise {
+    position:absolute;inset:0;opacity:0.025;
+    background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+    background-size:200px 200px;
+  }
+  .ln-card {
+    position:relative;z-index:1;width:100%;max-width:420px;
+    background:rgba(4, 30, 27, 0.93);
+    border:1px solid rgba(255,255,255,0.08); border-radius:20px; padding:40px 36px 36px;
+    box-shadow:0 32px 80px rgba(0,0,0,0.8), 0 0 120px rgba(13,148,136,0.1);
+    backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px);
+    animation:lnCardIn 0.7s cubic-bezier(0.16,1,0.3,1) both; overflow:hidden;
+  }
+  .ln-card::before {
+    content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:70%;height:2px;
+    background:linear-gradient(to right,transparent,rgba(13,148,136,0.6),transparent);
+  }
+  .ln-card::after {
+    content:'';position:absolute;top:0;left:0;right:0;height:120px;
+    background:linear-gradient(to bottom,rgba(13,148,136,0.07),transparent);pointer-events:none;
+  }
+  @keyframes lnCardIn { from{opacity:0;transform:translateY(24px) scale(0.97);} to{opacity:1;transform:translateY(0) scale(1);} }
+  @keyframes lnFadeUp  { from{opacity:0;transform:translateY(12px);} to{opacity:1;transform:translateY(0);} }
+  .ln-cstreaks{position:absolute;inset:0;overflow:hidden;pointer-events:none;border-radius:20px;}
+  .ln-cs{display:none;}
+  .ln-cs:nth-child(1){left:15%;animation-duration:5s;animation-delay:0.3s;}
+  .ln-cs:nth-child(2){left:32%;animation-duration:4.5s;animation-delay:1.8s;height:70%;}
+  .ln-cs:nth-child(3){left:50%;animation-duration:6s;animation-delay:0.9s;}
+  .ln-cs:nth-child(4){left:68%;animation-duration:4.8s;animation-delay:2.4s;height:45%;}
+  .ln-cs:nth-child(5){left:84%;animation-duration:5.3s;animation-delay:0.5s;height:65%;}
+  .ln-brand{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:18px;animation:lnFadeUp 0.6s 0.15s both;}
+  .ln-brand-logo{width:38px;height:38px;} .ln-brand-logo svg{width:100%;height:100%;}
+  .ln-brand-name{font-weight:800;font-size:20px;letter-spacing:-0.3px;color:#f0fdfa;}
+  .ln-role-badge{display:flex;align-items:center;justify-content:center;margin-bottom:16px;animation:lnFadeUp 0.6s 0.18s both;}
+  .ln-role-pill{display:inline-flex;align-items:center;gap:6px;background:rgba(13,148,136,0.15);border:1px solid rgba(13,148,136,0.3);border-radius:100px;padding:5px 14px;font-size:12.5px;font-weight:500;color:#2dd4bf;letter-spacing:0.3px;}
+  .ln-role-pill svg{width:14px;height:14px;}
+  .ln-title{font-weight:800;font-size:26px;letter-spacing:-0.5px;text-align:center;color:#f0fdfa;margin-bottom:6px;animation:lnFadeUp 0.6s 0.2s both;}
+  .ln-sub{font-size:13.5px;color:rgba(240,253,250,0.55);text-align:center;margin-bottom:28px;font-weight:300;animation:lnFadeUp 0.6s 0.25s both;}
+  .ln-form{display:flex;flex-direction:column;gap:16px;animation:lnFadeUp 0.6s 0.3s both;}
+  .ln-field{display:flex;flex-direction:column;gap:7px;}
+  .ln-label{font-size:12.5px;font-weight:500;color:rgba(240,253,250,0.55);letter-spacing:0.3px;transition:color 0.2s;}
+  .ln-req{color:#2dd4bf;margin-right:2px;}
+  .ln-input-wrap{position:relative;display:flex;align-items:center;}
+  .ln-input-wrap input{width:100%;height:46px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:0 16px 0 44px;font-family:'Tajawal',sans-serif;font-size:14px;font-weight:400;color:#f0fdfa;outline:none;transition:border-color 0.2s,background 0.2s,box-shadow 0.2s;-webkit-appearance:none;}
+  .ln-input-wrap input::placeholder{color:rgba(240,253,250,0.35);font-weight:300;}
+  .ln-input-wrap input:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.13);}
+  .ln-input-wrap input:focus{background:rgba(13,148,136,0.06);border-color:#0d9488;box-shadow:0 0 0 3px rgba(13,148,136,0.15);}
+  .ln-eye{position:absolute;left:14px;top:50%;transform:translateY(-50%);background:none;border:none;cursor:pointer;color:rgba(240,253,250,0.35);display:flex;align-items:center;justify-content:center;padding:4px;transition:color 0.2s;}
+  .ln-eye:hover{color:#2dd4bf;}
+  .ln-remember{display:flex;align-items:center;gap:8px;cursor:pointer;margin-top:-4px;}
+  .ln-remember input[type="checkbox"]{width:15px;height:15px;accent-color:#0d9488;cursor:pointer;}
+  .ln-remember-label{font-size:12.5px;color:rgba(240,253,250,0.55);font-weight:400;}
+  .ln-btn{position:relative;overflow:hidden;width:100%;height:48px;background:linear-gradient(135deg,#0d9488 0%,#0f766e 100%);border:none;border-radius:10px;font-family:'Tajawal',sans-serif;font-size:15px;font-weight:700;color:#fff;cursor:pointer;transition:transform 0.15s,box-shadow 0.2s;margin-top:4px;letter-spacing:0.2px;}
+  .ln-btn:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(13,148,136,0.45),0 0 60px rgba(13,148,136,0.18);}
+  .ln-btn:active{transform:translateY(0);box-shadow:none;}
+  .ln-btn .ln-ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,0.25);transform:scale(0);animation:lnRipple 0.6s linear;pointer-events:none;}
+  @keyframes lnRipple{to{transform:scale(4);opacity:0;}}
+  .ln-error{background:rgba(220,38,38,0.12);border:1px solid rgba(220,38,38,0.3);border-radius:8px;padding:10px 14px;font-size:13px;color:#fca5a5;text-align:center;display:none;}
+  .ln-error.show{display:block;}
+  #ln-email:-webkit-autofill,#ln-password:-webkit-autofill{-webkit-box-shadow:0 0 0 100px #041e1c inset !important;-webkit-text-fill-color:#f0fdfa !important;transition:background-color 600000s 0s,color 600000s 0s;}
+  .ln-eye-open,.ln-eye-closed{transition:opacity 0.2s;} .ln-eye-closed{display:none;}
+  .ln-eye.show-pass .ln-eye-open{display:none;} .ln-eye.show-pass .ln-eye-closed{display:block;}
+  @media(max-width:480px){.ln-card{padding:32px 24px 28px;} .ln-title{font-size:22px;}}
+  </style>
+</head>
+<body>
+
+  <!-- ========== LOGIN OVERLAY ========== -->
+  <div id="loginOverlay">
+    <div class="ln-scene" aria-hidden="true">
+      <div class="ln-streak"></div><div class="ln-streak"></div><div class="ln-streak"></div>
+      <div class="ln-streak"></div><div class="ln-streak"></div><div class="ln-streak"></div>
+      <div class="ln-streak"></div><div class="ln-streak"></div><div class="ln-streak"></div>
+      <div class="ln-streak"></div><div class="ln-streak"></div><div class="ln-streak"></div>
+      <div class="ln-noise"></div>
+    </div>
+    <div class="ln-card">
+      <div class="ln-cstreaks" aria-hidden="true">
+        <div class="ln-cs"></div><div class="ln-cs"></div><div class="ln-cs"></div>
+        <div class="ln-cs"></div><div class="ln-cs"></div>
+      </div>
+      <div class="ln-brand">
+        <div class="ln-brand-logo">
+          <svg viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="19" cy="19" r="18" stroke="#0891b2" stroke-width="1.5" opacity="0.4"/>
+            <circle cx="19" cy="19" r="13" stroke="#0d9488" stroke-width="1" opacity="0.25"/>
+            <rect x="16" y="11" width="6" height="16" rx="2" fill="#0891b2" opacity="0.9"/>
+            <rect x="11" y="16" width="16" height="6" rx="2" fill="#0891b2" opacity="0.9"/>
+            <circle cx="19" cy="19" r="2.5" fill="#67e8f9"/>
+          </svg>
+        </div>
+        <span class="ln-brand-name">DocBook</span>
+      </div>
+      <div class="ln-role-badge">
+        <span class="ln-role-pill">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4"/>
+            <path d="M6 20v-1a6 6 0 0 1 12 0v1"/>
+          </svg>
+          بوابة الطبيب
+        </span>
+      </div>
+      <h1 class="ln-title">أهلاً بعودتك</h1>
+      <p class="ln-sub">أدخل بيانات حسابك للوصول إلى لوحة التحكم</p>
+      <div id="ln-error" class="ln-error">كلمة المرور غير صحيحة، حاول مجدداً</div>
+      <div class="ln-form">
+        <div class="ln-field">
+          <label class="ln-label" for="ln-email">البريد الإلكتروني <span class="ln-req">*</span></label>
+          <div class="ln-input-wrap">
+            <input type="email" id="ln-email" placeholder="أدخل البريد الإلكتروني" autocomplete="email">
+          </div>
+        </div>
+        <div class="ln-field">
+          <label class="ln-label" for="ln-password">كلمة المرور <span class="ln-req">*</span></label>
+          <div class="ln-input-wrap">
+            <input type="password" id="ln-password" placeholder="أدخل كلمة المرور" autocomplete="current-password">
+            <button class="ln-eye" id="ln-eye-toggle" type="button" tabindex="-1" aria-label="إظهار/إخفاء">
+              <svg class="ln-eye-open" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+              </svg>
+              <svg class="ln-eye-closed" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+                <line x1="3" y1="3" x2="21" y2="21"/>
+              </svg>
+            </button>
+          </div>
+        </div>
+        <!-- Removed Remember Me -->
+        <button class="ln-btn" id="ln-submit" type="button">تسجيل الدخول</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+
+  <header class="sticky top-0 z-40" style="background:var(--surface);border-bottom:2px solid var(--border);box-shadow:var(--shadow-sm);padding:0 20px;height:64px;display:flex;align-items:center;">
+    <div class="max-w-7xl mx-auto flex items-center justify-between" style="width:100%">
+      <div class="flex items-center gap-3 header-link" id="headerLogo" onclick="goToToday()">
+        <div style="width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--primary-3));display:flex;align-items:center;justify-content:center;color:white;font-size:.95rem;box-shadow:0 0 0 3px var(--primary-light);">
+          <i class="fas fa-user-md"></i>
+        </div>
+        <div>
+          <h1 class="font-bold text-base" style="color:var(--text-primary);line-height:1.2;">لوحة الطبيب</h1>
+          <div id="doctorHeaderDate" class="nurse-header-sub">اليوم ، التاريخ</div>
+        </div>
+      </div>
+      <button class="settings-btn" onclick="openSettingsModal()" title="الإعدادات">
+        <i class="fas fa-cog"></i>
+      </button>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 md:px-6 py-4 flex flex-col md:flex-row gap-6">
+    <aside class="sidebar md:flex">
+      <div class="sidebar-item active" id="sidebarCalendar">
+        <div class="sidebar-icon"><i class="fas fa-calendar-alt"></i></div>
+        <div><h3 class="font-bold">المواعيد المؤكدة</h3><p class="text-xs">الروزنامة اليومية</p></div>
+      </div>
+      <div class="sidebar-item" id="sidebarPatients">
+        <div class="sidebar-icon"><i class="fas fa-address-book"></i></div>
+        <div><h3 class="font-bold">دفتر المرضى</h3><p class="text-xs">سجل المرضى والزيارات</p></div>
+      </div>
+      <div class="sidebar-item" id="sidebarStats">
+        <div class="sidebar-icon"><i class="fas fa-chart-pie"></i></div>
+        <div><h3 class="font-bold">الإحصائيات</h3><p class="text-xs">تحليلات متقدمة</p></div>
+      </div>
+    </aside>
+
+    <div class="flex-1 space-y-4">
+      <div id="toast" class="toast hidden fixed top-20 left-1/2 -translate-x-1/2 z-50 w-11/12 max-w-md">
+        <div id="toastContent" style="padding:12px 16px;border-radius:16px;box-shadow:var(--shadow-lg);font-weight:700;font-size:.875rem;display:flex;align-items:center;gap:12px;background:var(--primary);color:white"></div>
+      </div>
+
+      <div id="loader" class="hidden">
+        <div style="background:var(--surface);border:1.5px solid var(--border);border-radius:16px;padding:20px;display:flex;align-items:center;gap:12px;justify-content:center;box-shadow:var(--shadow)">
+          <i class="fas fa-circle-notch fa-spin text-lg" style="color:var(--primary)"></i>
+          <span class="font-bold" style="color:var(--primary)">جاري جلب البيانات...</span>
+        </div>
+      </div>
+
+      <!-- قسم الروزنامة -->
+      <section id="calendarSection">
+        <div class="grid grid-cols-1 lg:grid-cols-[380px_1fr] gap-5">
+          <div>
+            <div class="compact-calendar-container">
+              <div class="compact-calendar-header flex justify-between items-center mb-4">
+                <button id="prevMonthBtn" style="width:34px;height:34px;border-radius:9px;background:var(--surface);border:1.5px solid var(--border);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.85rem;transition:all .15s;" onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)';this.style.background='var(--primary-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)';this.style.background='var(--surface)'"><i class="fas fa-chevron-right"></i></button>
+                <div class="text-center">
+                  <h3 id="currentMonth" class="text-base font-bold mb-1" style="color:var(--text-primary)">-</h3>
+                  <div class="density-legend flex items-center justify-center gap-2 text-xs">
+                    <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full compact-dot-low"></div><span>خفيف</span></div>
+                    <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full compact-dot-medium"></div><span>متوسط</span></div>
+                    <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-full compact-dot-high"></div><span>مزدحم</span></div>
+                  </div>
+                </div>
+                <button id="nextMonthBtn" style="width:34px;height:34px;border-radius:9px;background:var(--surface);border:1.5px solid var(--border);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:0.85rem;transition:all .15s;" onmouseover="this.style.borderColor='var(--primary)';this.style.color='var(--primary)';this.style.background='var(--primary-light)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text-muted)';this.style.background='var(--surface)'"><i class="fas fa-chevron-left"></i></button>
+              </div>
+              <div class="compact-calendar-grid mb-2">
+                <div class="compact-calendar-day-name text-xs" style="color:var(--text-muted);font-weight:600">سبت</div><div class="compact-calendar-day-name text-xs" style="color:var(--text-muted);font-weight:600">جمعة</div><div class="compact-calendar-day-name text-xs" style="color:var(--text-muted);font-weight:600">خميس</div>
+                <div class="compact-calendar-day-name text-xs" style="color:var(--text-muted);font-weight:600">أربعاء</div><div class="compact-calendar-day-name text-xs" style="color:var(--text-muted);font-weight:600">ثلاثاء</div><div class="compact-calendar-day-name text-xs" style="color:var(--text-muted);font-weight:600">إثنين</div><div class="compact-calendar-day-name text-xs" style="color:var(--text-muted);font-weight:600">أحد</div>
+              </div>
+              <div id="calendarGrid" class="compact-calendar-grid"></div>
+            </div>
+          </div>
+          <div id="dayAgenda" class="glass-card" style="flex:1; min-width:280px; align-self:start;">
+            <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:16px;">
+              <div>
+                <h3 id="agendaTitle" style="font-weight:700; font-size:.9rem; color:var(--text-primary);">-</h3>
+                <p id="agendaCount" style="font-size:.72rem; color:var(--text-muted); margin-top:2px;">عدد المواعيد المؤكدة: 0</p>
+              </div>
+              <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                <button id="showDayDetailsBtn" type="button" class="btn-show-details" title="عرض تفاصيل اليوم"><i class="fas fa-eye"></i></button>
+              </div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr; gap:16px;">
+              <div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                  <i class="fas fa-sun" style="color:var(--amber); font-size:.9rem;"></i>
+                  <span style="font-weight:700; font-size:.88rem;">الصباح</span>
+                  <span id="agendaMorningCount" style="background:var(--primary-light); color:var(--primary); padding:2px 10px; border-radius:20px; font-size:.72rem; font-weight:700;">0</span>
+                </div>
+                <div id="agendaMorning"></div>
+              </div>
+              <div>
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:10px;">
+                  <i class="fas fa-moon" style="color:#6366f1; font-size:.9rem;"></i>
+                  <span style="font-weight:700; font-size:.88rem;">المساء</span>
+                  <span id="agendaEveningCount" style="background:var(--primary-light); color:var(--primary); padding:2px 10px; border-radius:20px; font-size:.72rem; font-weight:700;">0</span>
+                </div>
+                <div id="agendaEvening"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- قسم دفتر المرضى -->
+      <section id="patientBookSection" class="hidden">
+        <div class="glass-card">
+          <div class="flex items-center justify-between mb-5">
+            <div class="flex items-center gap-3">
+              <div style="width:40px;height:40px;border-radius:12px;background:linear-gradient(135deg,var(--primary),var(--primary-3));color:white;display:flex;align-items:center;justify-content:center"><i class="fas fa-address-book text-lg"></i></div>
+              <div><h2 class="font-bold text-base" style="color:var(--text-primary)">دفتر المرضى</h2><p class="text-xs" style="color:var(--text-muted)">سجل المرضى والزيارات</p></div>
+            </div>
+            <div class="flex gap-2">
+              <!-- تم إزالة زر إضافة مريض جديد بناء على طلب المستخدم -->
+              <div style="padding:4px 12px;background:var(--primary-light);color:var(--primary);border-radius:8px;font-size:.75rem;font-weight:700;border:1px solid var(--border)"><i class="fas fa-users ml-1"></i> <span id="totalPatientsCount">0</span></div>
+            </div>
+          </div>
+          <div class="mb-4"><input type="text" id="patientBookSearch" class="w-full p-3 pr-10 rounded-lg" style="background:var(--primary-faint);border:1.5px solid var(--border);color:var(--text-primary);border-radius:10px;font-family:inherit;" placeholder="ابحث باسم المريض أو رقم الهاتف..."></div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="patientsGrid"></div>
+        </div>
+      </section>
+
+      <!-- قسم الإحصائيات -->
+      <section id="statsSection" class="hidden">
+        <div class="space-y-6">
+          <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="stat-card fade-in" onclick="showStatInfo('active')">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+                <div>
+                  <h3 style="font-size:0.8rem;color:var(--text-muted);font-weight:600;">المرضى النشطين</h3>
+                  <div class="stat-value" id="statActiveUsers">0</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-heart-circle-plus"></i></div>
+              </div>
+            </div>
+            <div class="stat-card fade-in" onclick="showStatInfo('total')">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+                <div>
+                  <h3 style="font-size:0.8rem;color:var(--text-muted);font-weight:600;">إجمالي الزيارات</h3>
+                  <div class="stat-value" id="statTotalVisits">0</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-clipboard-list"></i></div>
+              </div>
+            </div>
+            <div class="stat-card cancelled-shadow fade-in" onclick="showStatInfo('cancelled')">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+                <div>
+                  <h3 style="font-size:0.8rem;color:var(--text-muted);font-weight:600;">المواعيد الملغاة</h3>
+                  <div class="stat-value" id="statCancelled">0</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-ban"></i></div>
+              </div>
+            </div>
+            <div class="stat-card repeat-shadow fade-in" onclick="showStatInfo('repeat')">
+              <div style="display:flex;align-items:flex-start;justify-content:space-between;">
+                <div>
+                  <h3 style="font-size:0.8rem;color:var(--text-muted);font-weight:600;">نسبة التكرار</h3>
+                  <div class="stat-value-small" id="statConversion">0%</div>
+                </div>
+                <div class="stat-icon"><i class="fas fa-arrow-trend-up"></i></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <div style="display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; flex-wrap:wrap; gap:10px;">
+              <div>
+                <div class="card-title">تحليلات المواعيد</div>
+                <div class="card-subtitle">توزيع المواعيد المؤكدة</div>
+              </div>
+              <div class="card-actions">
+                <button class="card-btn active" onclick="updateChartPeriod('monthly')">شهري</button>
+                <button class="card-btn" onclick="updateChartPeriod('weekly')">أسبوعي</button>
+                <button class="card-btn" onclick="updateChartPeriod('daily')">يومي</button>
+              </div>
+            </div>
+            <div style="overflow-x:auto;">
+              <div class="chart-container" id="appointmentsChartContainer">
+                <div class="chart-y-axis" id="chartYAxis"></div>
+                <div class="chart-placeholder" id="appointmentsChart"></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Donut cards — unified layout matching nurse dashboard -->
+          <div style="display:grid; gap:18px;" id="donutsGrid">
+
+            <!-- Donut 1 — Morning / Evening -->
+            <div class="glass-card" style="display:flex; flex-direction:column; align-items:center; gap:0;">
+              <div style="width:100%; margin-bottom:14px;">
+                <div class="card-title">توزيع الزيارات</div>
+                <div class="card-subtitle">صباحي / مسائي</div>
+              </div>
+              <div style="position:relative; width:160px; height:160px; flex-shrink:0;">
+                <svg width="160" height="160" viewBox="0 0 160 160" style="transform:rotate(-90deg);">
+                  <circle cx="80" cy="80" r="62" stroke="#f0fdfa" stroke-width="16" fill="none"/>
+                  <circle class="donut-segment" id="donut1Seg1" cx="80" cy="80" r="62" stroke="#fbbf24" stroke-width="16" fill="none" stroke-linecap="round" stroke-dasharray="0 389.6" stroke-dashoffset="0" style="transition:stroke-dasharray .8s cubic-bezier(.4,0,.2,1);"/>
+                  <circle class="donut-segment" id="donut1Seg2" cx="80" cy="80" r="62" stroke="#6366f1" stroke-width="16" fill="none" stroke-linecap="round" stroke-dasharray="0 389.6" stroke-dashoffset="0" style="transition:stroke-dasharray .8s cubic-bezier(.4,0,.2,1) .05s, stroke-dashoffset .8s cubic-bezier(.4,0,.2,1) .05s;"/>
+                </svg>
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+                  <div id="donut1Total" style="font-family:'DM Mono',monospace;font-size:1.6rem;font-weight:700;color:var(--text-primary);line-height:1;">0</div>
+                  <div style="font-size:.65rem;color:var(--text-muted);margin-top:2px;font-weight:600;">موعد</div>
+                </div>
+              </div>
+              <div id="donut1Legend" style="width:100%;display:flex;flex-direction:column;gap:10px;margin-top:18px;"></div>
+            </div>
+
+            <!-- Donut 2 — Online / Manual -->
+            <div class="glass-card" style="display:flex; flex-direction:column; align-items:center; gap:0;">
+              <div style="width:100%; margin-bottom:14px;">
+                <div class="card-title">مصدر الحجز</div>
+                <div class="card-subtitle">أونلاين / يدوي</div>
+              </div>
+              <div style="position:relative; width:160px; height:160px; flex-shrink:0;">
+                <svg width="160" height="160" viewBox="0 0 160 160" style="transform:rotate(-90deg);">
+                  <circle cx="80" cy="80" r="62" stroke="#f0fdfa" stroke-width="16" fill="none"/>
+                  <circle class="donut-segment" id="donut2Seg1" cx="80" cy="80" r="62" stroke="#22c55e" stroke-width="16" fill="none" stroke-linecap="round" stroke-dasharray="0 389.6" stroke-dashoffset="0" style="transition:stroke-dasharray .8s cubic-bezier(.4,0,.2,1);"/>
+                  <circle class="donut-segment" id="donut2Seg2" cx="80" cy="80" r="62" stroke="#f43f5e" stroke-width="16" fill="none" stroke-linecap="round" stroke-dasharray="0 389.6" stroke-dashoffset="0" style="transition:stroke-dasharray .8s cubic-bezier(.4,0,.2,1) .05s, stroke-dashoffset .8s cubic-bezier(.4,0,.2,1) .05s;"/>
+                </svg>
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+                  <div id="donut2Total" style="font-family:'DM Mono',monospace;font-size:1.6rem;font-weight:700;color:var(--text-primary);line-height:1;">0</div>
+                  <div style="font-size:.65rem;color:var(--text-muted);margin-top:2px;font-weight:600;">موعد</div>
+                </div>
+              </div>
+              <div id="donut2Legend" style="width:100%;display:flex;flex-direction:column;gap:10px;margin-top:18px;"></div>
+            </div>
+
+            <!-- Donut 3 — Avg Visit Duration -->
+            <div class="glass-card" style="display:flex; flex-direction:column; align-items:center; gap:0;">
+              <div style="width:100%; margin-bottom:14px;">
+                <div class="card-title">زمن الزيارة</div>
+                <div class="card-subtitle">المعدل الوسطي</div>
+              </div>
+              <div style="position:relative; width:160px; height:160px; flex-shrink:0;">
+                <svg width="160" height="160" viewBox="0 0 160 160" style="transform:rotate(-90deg);">
+                  <circle cx="80" cy="80" r="62" stroke="#f0fdfa" stroke-width="16" fill="none"/>
+                  <circle class="donut-segment" id="donut3Seg1" cx="80" cy="80" r="62" stroke="#0d9488" stroke-width="16" fill="none" stroke-linecap="round" stroke-dasharray="389.6 389.6" stroke-dashoffset="0" style="transition:stroke-dasharray .8s cubic-bezier(.4,0,.2,1);"/>
+                </svg>
+                <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none;">
+                  <div id="avgDurationVal" style="font-family:'DM Mono',monospace;font-size:1.4rem;font-weight:700;color:var(--text-primary);line-height:1;">00:00</div>
+                  <div style="font-size:.65rem;color:var(--text-muted);margin-top:2px;font-weight:600;">دقيقة</div>
+                </div>
+              </div>
+              <div id="durationLegend" style="width:100%;display:flex;flex-direction:column;gap:10px;margin-top:18px;"></div>
+            </div>
+
+          </div>
+
+          <!-- Recent visits -->
+          <div class="glass-card">
+            <div style="margin-bottom:16px;">
+              <div class="card-title">أحدث الزيارات</div>
+              <div class="card-subtitle">آخر 30 زيارة</div>
+            </div>
+            <div class="scrollable-visits">
+              <table class="w-full text-sm">
+                <thead><tr><th class="text-right" style="color:var(--text-muted)">المريض</th><th class="text-right" style="color:var(--text-muted)">النوع</th><th class="text-right" style="color:var(--text-muted)">التاريخ</th></tr></thead>
+                <tbody id="recentAppointmentsTable"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- مودال الإعدادات -->
+  <div id="settingsModal" class="hidden fixed inset-0 z-[270] flex items-center justify-center p-4 modal-overlay">
+    <div class="modal-content max-w-md w-full">
+      <div style="padding:16px; border-bottom:1.5px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="font-weight:700; font-size:1.05rem; color:var(--text-primary);">الإعدادات</h3>
+        <button onclick="closeSettingsModal()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.2rem;"><i class="fas fa-times"></i></button>
+      </div>
+      <div style="padding:16px; display:flex; flex-direction:column; gap:16px; max-height:65vh; overflow-y:auto;">
+        <div>
+          <label class="form-label">اسم اللوحة</label>
+          <input type="text" id="settingsTitleInput" class="form-input" placeholder="أدخل الاسم الجديد" value="لوحة الطبيب">
+        </div>
+        <div>
+          <label class="form-label">الشعار</label>
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div id="logoPreviewContainer" style="width:52px; height:52px; border-radius:50%; overflow:hidden; display:flex; align-items:center; justify-content:center; background:linear-gradient(135deg, var(--primary), #2dd4bf); flex-shrink:0; border:2px solid var(--border-strong);">
+              <span id="logoPreviewIcon" style="color:white; font-size:1.2rem;"><i class="fas fa-user-md"></i></span>
+              <img id="logoPreviewImg" class="hidden" style="width:100%;height:100%;object-fit:cover;" src="" alt="شعار">
+            </div>
+            <div>
+              <label for="logoFileInput" class="btn-secondary" style="cursor:pointer; display:inline-flex; align-items:center; gap:6px; padding:8px 14px; border-radius:8px; font-size:.82rem; font-weight:700;">
+                <i class="fas fa-upload"></i> رفع صورة
+              </label>
+              <input type="file" id="logoFileInput" accept="image/*" class="hidden">
+              <button id="removeLogoBtn" class="hidden" onclick="removeLogo()" style="background:none;border:none;cursor:pointer;color:var(--red);font-size:.82rem;margin-right:8px;"><i class="fas fa-trash"></i> حذف</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div style="padding:16px; border-top:1.5px solid var(--border); display:flex; justify-content:flex-end; gap:10px;">
+        <button onclick="closeSettingsModal()" class="btn-secondary" style="padding:9px 18px;">إلغاء</button>
+        <button onclick="saveSettings()" class="btn-primary" style="padding:9px 18px;">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <nav class="bottom-nav" style="height:64px; padding:0;">
+    <div class="bottom-nav-item active" id="mobileCalendar"><i class="fas fa-calendar-alt"></i><span>المواعيد</span></div>
+    <div class="bottom-nav-item" id="mobilePatients"><i class="fas fa-address-book"></i><span>المرضى</span></div>
+    <div class="bottom-nav-item" id="mobileStats"><i class="fas fa-chart-pie"></i><span>إحصائيات</span></div>
+    <!-- FAB على اليسار -->
+    <div class="mob-doc-fab-container">
+      <!-- Pills تظهر فوق الزر -->
+      <div id="mobDocPills">
+        <button class="doc-fab-pill" onclick="closeMobDocFab();sendNurseAlert('next')">
+          <span class="doc-fab-pill-icon next-p"><i class="fas fa-user-arrow-right"></i></span>
+          <span class="doc-fab-pill-label">أدخل المريض</span>
+        </button>
+        <button class="doc-fab-pill" onclick="closeMobDocFab();sendNurseAlert('enter')">
+          <span class="doc-fab-pill-icon enter-p"><i class="fas fa-door-open"></i></span>
+          <span class="doc-fab-pill-label">استدعاء الممرضة</span>
+        </button>
+        <button class="doc-fab-pill" id="customPillMob" onclick="closeMobDocFab();sendNurseAlert('custom')">
+          <span class="doc-fab-pill-icon custom-p"><i class="fas fa-star"></i></span>
+          <span class="doc-fab-pill-label" id="customAlertLabel">تنبيه مخصص</span>
+          <span class="doc-fab-pill-sublabel" onclick="event.stopPropagation();closeMobDocFab();openCustomAlertEdit()"><i class="fas fa-pencil-alt"></i></span>
+        </button>
+      </div>
+      <!-- الزر الرئيسي -->
+      <button class="doc-fab-trigger" id="mobDocFabTrigger" onclick="toggleMobDocFab()" aria-label="تنبيه الممرضة">
+        <div class="doc-fab-plus-icon"></div>
+      </button>
+    </div>
+  </nav>
+
+  <!-- مودال شرح الإحصائيات (يُستخدم الآن لعرض تفاصيل العمود أيضاً) -->
+  <div id="statInfoModal" class="hidden fixed inset-0 z-[100] flex items-center justify-center p-4 modal-overlay">
+    <div class="modal-content max-w-sm w-full">
+      <div style="padding:20px;border-bottom:1.5px solid var(--border);display:flex;justify-content:space-between;align-items:center">
+        <h3 id="statInfoTitle" class="font-bold" style="color:var(--text-primary)">معلومات</h3>
+        <button onclick="closeStatInfoModal()" style="color:var(--text-muted);cursor:pointer;background:none;border:none;font-size:1.2rem"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="p-5">
+        <div id="statInfoDescription" style="color:var(--text-secondary);line-height:1.75"></div>
+      </div>
+      <div style="padding:20px;border-top:1.5px solid var(--border);display:flex;justify-content:flex-end">
+        <button onclick="closeStatInfoModal()" class="btn-primary px-4 py-2">حسناً</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال تفاصيل اليوم - تصميم الممرضة -->
+  <div id="dayDetailsModal" class="hidden fixed inset-0 z-[105] flex items-center justify-center p-4 modal-overlay">
+    <div class="modal-content max-w-sm w-full">
+      <div style="padding:18px; border-bottom:1.5px solid var(--border); display:flex; justify-content:space-between; align-items:center;">
+        <h3 id="dayDetailsTitle" style="font-weight:700; color:var(--text-primary);">تفاصيل اليوم</h3>
+        <button onclick="closeDayDetailsModal()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.1rem; padding:4px;"><i class="fas fa-times"></i></button>
+      </div>
+      <div style="padding:18px;" id="dayDetailsContent"></div>
+      <div style="padding:18px; border-top:1.5px solid var(--border); display:flex; justify-content:flex-end;">
+        <button onclick="closeDayDetailsModal()" class="btn-primary" style="padding:9px 22px;">حسناً</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال تفاصيل المريض -->
+  <div id="patientDetailsModal" class="hidden fixed inset-0 z-[150] flex items-center justify-center p-4 modal-overlay">
+    <div class="modal-content max-w-2xl w-full">
+      <div style="padding:16px;border-bottom:1.5px solid var(--border)">
+        <div class="flex justify-between items-center">
+          <h3 id="modalPatientName" class="font-bold text-lg" style="color:var(--text-primary)">-</h3>
+          <button id="closePatientDetailsModalBtn" style="color:var(--text-muted);cursor:pointer;background:none;border:none;font-size:1.2rem"><i class="fas fa-times text-xl"></i></button>
+        </div>
+        <div class="flex items-center gap-3 mt-3">
+          <p id="modalPatientPhone" style="color:var(--primary);font-size:1rem" dir="ltr"></p>
+          <a id="modalWhatsappBtn" href="#" target="_blank" class="action-btn-large whatsapp-btn"><i class="fab fa-whatsapp"></i></a>
+          <a id="modalCallBtn" href="#" class="action-btn-large call-btn"><i class="fas fa-phone"></i></a>
+        </div>
+      </div>
+      <div class="p-4 max-h-[70vh] overflow-y-auto">
+        <div class="bg-primary-5/10 rounded-xl p-4 mb-4">
+          <h4 style="font-weight:700;font-size:.875rem;color:var(--primary);margin-bottom:12px">معلومات المريض</h4>
+          <div class="grid grid-cols-2 gap-3 text-sm">
+            <div><span style="color:var(--text-muted)">تاريخ الميلاد:</span> <span id="modalPatientBirthDate" style="color:var(--text-primary)"></span></div>
+            <div><span style="color:var(--text-muted)">العمر:</span> <span id="modalPatientAge" style="color:var(--text-primary)"></span></div>
+            <div class="col-span-2"><span style="color:var(--text-muted)">العنوان:</span> <span id="modalPatientAddress" style="color:var(--text-primary)"></span></div>
+            <div><span style="color:var(--text-muted)">إجمالي الزيارات:</span> <span id="modalPatientTotalVisits" style="color:var(--text-primary)"></span></div>
+          </div>
+        </div>
+        <div class="bg-primary-5/10 rounded-xl p-4">
+          <div class="flex justify-between items-center mb-3">
+            <h4 style="font-weight:700;font-size:.875rem;color:var(--primary)">سجل الزيارات</h4>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead><tr><th class="text-right" style="color:var(--text-muted)">#</th><th class="text-right" style="color:var(--text-muted)">التاريخ</th><th class="text-right" style="color:var(--text-muted)">النوع</th><th class="text-right" style="color:var(--text-muted)">الفترة</th><th class="text-right" style="color:var(--text-muted)">ملاحظات</th><th class="text-right" style="color:var(--text-muted)"></th></tr></thead>
+              <tbody id="modalVisitsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال تفاصيل الموعد - تصميم جديد مطابق لنافذة المريض -->
+  <div id="appointmentDetailsModal" class="hidden fixed inset-0 z-[200] flex items-center justify-center p-4 modal-overlay">
+    <div class="modal-content max-w-2xl w-full">
+      <!-- Header -->
+      <div style="padding:16px; border-bottom:1.5px solid var(--border);">
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:14px;">
+          <div>
+            <h3 id="modalAgendaTitle" style="font-weight:700; font-size:.9rem; color:var(--text-primary);">-</h3>
+            <p id="modalAgendaCount" style="font-size:.72rem; color:var(--text-muted); margin-top:2px;">عدد المواعيد المؤكدة: 0</p>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span id="dayStatusBadge" class="day-status-badge open">مفتوح</span>
+            <button onclick="closeAppointmentDetailsModal()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.2rem; padding:4px;"><i class="fas fa-times"></i></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Body -->
+      <div style="padding:16px; max-height:65vh; overflow-y:auto;">
+        <!-- Row 1: الموعد والفترة -->
+        <div style="display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:18px;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="slotBadge" style="background:var(--primary-light); color:var(--primary); padding:4px 12px; border-radius:20px; font-size:.78rem; font-weight:700;">الصباح</span>
+            <i class="fas fa-sun" style="color:var(--amber); font-size:1.1rem;"></i>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <span id="visitTypeBadge" style="background:var(--primary-light); color:var(--primary); padding:4px 12px; border-radius:20px; font-size:.78rem; font-weight:700;">مراجعة</span>
+          </div>
+        </div>
+
+        <!-- Row 2: بطاقة الاتصال -->
+        <div style="background:var(--primary-light); border:1.5px solid var(--border-strong); border-radius:var(--border-radius); padding:14px; margin-bottom:16px;">
+          <p id="appDetailsNameHeader" style="font-weight:700; font-size:.9rem; color:var(--text-primary); margin-bottom:10px; border-bottom:1px solid var(--border-strong); padding-bottom:8px;"></p>
+          <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+            <div style="display:flex; align-items:center; gap:8px; flex:1;">
+              <div style="display:flex; gap:6px;">
+                <a id="appDetailsWhatsappBtn" href="#" target="_blank" class="action-btn-small whatsapp-btn"><i class="fab fa-whatsapp"></i></a>
+                <a id="appDetailsCallBtn" href="#" class="action-btn-small call-btn"><i class="fas fa-phone"></i></a>
+              </div>
+              <p id="appDetailsPhone" class="ltr" dir="ltr" style="color:var(--text-primary); font-size:.88rem; font-weight:600;"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Row 3: معلومات المريض -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; font-size:.85rem;">
+          <div><span style="color:var(--text-muted);">الاسم:</span> <span id="appDetailsName" style="font-weight:600; color:var(--text-primary);"></span></div>
+          <div><span style="color:var(--text-muted);">رقم الهاتف:</span> <span id="appDetailsPhoneInfo" class="ltr" dir="ltr" style="font-weight:600; color:var(--text-primary);"></span></div>
+          <div><span style="color:var(--text-muted);">تاريخ الميلاد:</span> <span id="appDetailsBirthDate" style="font-weight:600; color:var(--text-primary);"></span></div>
+          <div><span style="color:var(--text-muted);">العمر:</span> <span id="appDetailsAge" style="font-weight:600; color:var(--text-primary);"></span></div>
+          <div style="grid-column:span 2;"><span style="color:var(--text-muted);">العنوان:</span> <span id="appDetailsAddress" style="font-weight:600; color:var(--text-primary);"></span></div>
+        </div>
+
+        <!-- Hidden fields -->
+        <div style="display:none;">
+          <span id="appDetailsVisitType"></span>
+          <span id="appDetailsSlot"></span>
+          <span id="appDetailsDate"></span>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div style="padding:16px; border-top:1.5px solid var(--border); display:flex; justify-content:flex-end; gap:10px;">
+        <button onclick="closeAppointmentDetailsModal()" class="btn-primary" style="padding:9px 22px;">حسناً</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال إضافة زيارة (تم إخفاؤه نهائياً لأنه غير مستخدم) -->
+  <div id="addVisitModal" class="hidden fixed inset-0 z-70 flex items-center justify-center p-4 modal-overlay" style="display: none;"></div>
+
+  <!-- مودال عرض الملاحظة -->
+  <div id="noteModal" class="modal-hidden fixed inset-0 z-[160] flex items-center justify-center p-4 modal-overlay">
+    <div class="modal-content max-w-md w-full" style="max-height:90vh;overflow-y:auto;">
+      <div class="p-4 border-b flex justify-between items-center" style="border-color:var(--border)">
+        <h3 class="font-bold" style="color:var(--text-primary)">الملاحظة والصور</h3>
+        <button onclick="closeNoteModal()" style="color:var(--text-muted);cursor:pointer;background:none;border:none;font-size:1.2rem;padding:0;width:32px;height:32px;display:flex;align-items:center;justify-content:center"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="p-4" style="background:var(--surface);display:flex;flex-direction:column;gap:12px;">
+        <div style="font-size:.875rem;color:var(--primary);font-weight:600" id="noteVisitInfo"></div>
+        
+        <!-- قسم الوصفة الطبية -->
+        <div id="prescriptionSection" style="display:none; background:var(--amber-light); border-radius:10px; padding:12px; border:1px solid var(--amber);">
+          <div style="font-weight:700; font-size:.82rem; color:var(--amber); margin-bottom:4px;"><i class="fas fa-prescription ml-1"></i>الوصفة الطبية (الروشيتا):</div>
+          <div id="prescriptionContent" style="color:var(--text-primary); line-height:1.6; white-space:pre-wrap; word-break:break-word; font-size:0.9rem;"></div>
+        </div>
+
+        <div style="font-weight:700; font-size:.82rem; color:var(--text-muted); margin-bottom:-8px;"><i class="fas fa-pen ml-1"></i>الملاحظات العامة:</div>
+        <div id="noteContent" class="note-content" style="color:var(--text-primary);line-height:1.6;white-space:pre-wrap;word-break:break-word"></div>
+        
+          <div id="noteImagesSection" style="display:none;">
+          <div style="font-weight:700;font-size:.82rem;color:var(--text-muted);margin-bottom:8px;"><i class="fab fa-google-drive ml-1" style="color:#34a853"></i>الصور على Google Drive:</div>
+          <div id="noteImagesView" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
+        </div>
+        
+        <!-- قسم التواصل عبر واتساب -->
+        <div style="margin-top:16px; padding-top:16px; border-top:1.5px dashed var(--border);">
+          <div style="font-weight:700; font-size:.85rem; color:var(--primary); margin-bottom:10px;">
+            <i class="fab fa-whatsapp ml-1"></i> تواصل مع المريض لهذه الزيارة:
+          </div>
+          <textarea id="whatsappMsgInput" placeholder="اكتب الملاحظة التي تريد إرسالها..." 
+            style="width:100%; border:1.5px solid var(--border); border-radius:10px; padding:10px; font-size:.85rem; font-family:inherit; min-height:80px; resize:none; margin-bottom:10px;"></textarea>
+          
+          <div id="whatsappImagesSelect" style="display:none; margin-bottom:10px;">
+            <div style="font-size:.75rem; color:var(--text-muted); margin-bottom:5px;">اختر صورة لإرسالها (سيتم فتحها أولاً):</div>
+            <div id="whatsappImagesThumbnails" style="display:flex; gap:8px; overflow-x:auto; padding-bottom:5px;"></div>
+          </div>
+
+          <button id="sendToWhatsappBtn" class="btn-primary" style="width:100%; background:#25d366; border-color:#128c7e; justify-content:center;">
+            <i class="fab fa-whatsapp"></i> إرسال عبر واتساب
+          </button>
+          <p style="font-size:.65rem; color:var(--text-muted); margin-top:6px; text-align:center;">
+            * سيتم فتح واتساب مع النص وروابط الصور من Google Drive تلقائياً.
+          </p>
+        </div>
+      </div>
+      <div class="p-4 border-t flex justify-end" style="border-color:var(--border)">
+        <button onclick="closeNoteModal()" class="btn-primary px-4 py-2">إغلاق</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال إضافة مريض جديد (تم إخفاؤه نهائياً) -->
+  <div id="newPatientModal" class="hidden fixed inset-0 z-90 flex items-center justify-center p-4 modal-overlay" style="display: none;"></div>
+
+  <!-- مودال إضافة ملاحظة -->
+  <div id="addNoteModal" class="modal-hidden fixed inset-0 z-[170] flex items-center justify-center p-4 modal-overlay">
+    <div class="modal-content max-w-lg w-full" style="max-height:90vh;overflow-y:auto;">
+      <div class="p-4 border-b" style="border-color:var(--border);background:var(--surface)">
+        <h3 class="font-bold" style="color:var(--text-primary)">إضافة ملاحظة وصور</h3>
+      </div>
+      <div class="p-4" style="background:var(--surface);display:flex;flex-direction:column;gap:14px;">
+        <!-- نص الملاحظة -->
+        <div>
+          <label style="display:block;font-weight:700;font-size:.82rem;color:var(--text-muted);margin-bottom:6px;"><i class="fas fa-pen ml-1"></i>الملاحظة العامة</label>
+          <textarea id="noteText" class="w-full p-3 rounded-lg" style="border:1.5px solid var(--border);background:var(--primary-faint);color:var(--text-primary);font-family:inherit;font-size:0.95rem;resize:vertical" rows="3" placeholder="اكتب الملاحظة العامة..."></textarea>
+        </div>
+
+        <!-- الوصفة الطبية (الروشيتا) -->
+        <div>
+          <label style="display:block;font-weight:700;font-size:.82rem;color:var(--text-muted);margin-bottom:6px;"><i class="fas fa-prescription ml-1"></i>الوصفة الطبية (الروشيتا)</label>
+          <textarea id="prescriptionText" class="w-full p-3 rounded-lg" style="border:1.5px solid var(--border);background:var(--amber-light);color:var(--text-primary);font-family:inherit;font-size:0.95rem;resize:vertical" rows="4" placeholder="اكتب الأدوية والتعليمات الطبية..."></textarea>
+        </div>
+
+        <!-- قسم رفع الصور -->
+        <div>
+          <label style="display:block;font-weight:700;font-size:.82rem;color:var(--text-muted);margin-bottom:8px;"><i class="fas fa-image ml-1"></i>الصور (تحاليل / أشعة)</label>
+          
+          <!-- منطقة رفع الصور -->
+          <div id="imageUploadZone" onclick="triggerImageUpload()" style="border:2px dashed var(--border-strong);border-radius:14px;padding:20px;text-align:center;cursor:pointer;background:var(--primary-faint);transition:all .2s;">
+            <i class="fab fa-google-drive" style="font-size:2rem;color:var(--primary);margin-bottom:8px;display:block;"></i>
+            <p style="font-weight:700;color:var(--primary);font-size:.88rem;">اضغط لرفع صورة على Google Drive</p>
+            <p style="color:var(--text-muted);font-size:.75rem;margin-top:4px;">تحليل، أشعة، أو أي صورة طبية</p>
+            <p style="color:var(--text-muted);font-size:.72rem;margin-top:2px;">سيتم رفع الصورة ومشاركة رابط مباشر للمريض</p>
+          </div>
+          <input type="file" id="noteImageInput" accept="image/*" multiple class="hidden">
+
+          <!-- معرض الصور المرفوعة -->
+          <div id="noteImagesPreview" style="display:none;margin-top:12px;">
+            <div style="font-size:.78rem;font-weight:700;color:var(--text-muted);margin-bottom:8px;"><i class="fab fa-google-drive ml-1" style="color:#34a853"></i>صور مرفوعة على Google Drive:</div>
+            <div id="noteImagesGrid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;"></div>
+          </div>
+        </div>
+
+        <input type="hidden" id="notePatientId">
+        <input type="hidden" id="noteVisitIndex">
+      </div>
+      <div class="p-4 border-t flex flex-col gap-3" style="border-color:var(--border);background:var(--surface)">
+        <div class="flex gap-3">
+          <button onclick="closeAddNoteModal()" class="btn-secondary flex-1">إلغاء</button>
+          <button id="saveNoteBtn" class="btn-primary flex-1"><i class="fas fa-save ml-1"></i>حفظ</button>
+        </div>
+        <button id="saveAndWhatsappBtn" class="btn-primary" style="width:100%; background:#25d366; border-color:#128c7e; justify-content:center;">
+          <i class="fab fa-whatsapp"></i> حفظ وإرسال روابط الصور للمريض
+        </button>
+        <p style="font-size:.65rem; color:var(--text-muted); text-align:center; margin-top:-4px;">
+          * سيتم رفع الصور على Drive وإرسال روابطها عبر واتساب تلقائياً.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <!-- مودال عرض صورة مكبّرة -->
+  <div id="imageViewerModal" class="modal-hidden fixed inset-0 z-[300] flex items-center justify-center p-4" style="background:rgba(0,0,0,0.85);" onclick="closeImageViewer()">
+    <div style="position:relative;max-width:95vw;max-height:90vh;" onclick="event.stopPropagation()">
+      <button onclick="closeImageViewer()" style="position:absolute;top:-14px;left:-14px;width:34px;height:34px;border-radius:50%;background:var(--red);color:white;border:none;cursor:pointer;font-size:1rem;z-index:10;display:flex;align-items:center;justify-content:center;"><i class="fas fa-times"></i></button>
+      <img id="imageViewerImg" src="" style="max-width:95vw;max-height:85vh;border-radius:14px;object-fit:contain;box-shadow:0 8px 40px rgba(0,0,0,.5);">
+      <div id="imageViewerCaption" style="text-align:center;color:white;margin-top:8px;font-size:.82rem;"></div>
+    </div>
+  </div>
+
+  <script>
+    // ==================== Firebase Storage Layer ====================
+    // مفاتيح مشتركة مع ملف الممرضة
+    const STORAGE_KEY          = 'doctorAppointments';
+    const PATIENTS_STORAGE_KEY = 'doctorPatients';
+    const CLOSED_DAYS_KEY      = 'closedDays';
+    const NOTES_KEY            = 'sharedNotes';
+
+    // ── Helpers ──
+    function getDb()   { return window.__db; }
+    function getFb()   { return window.__fbFns; }
+    function fbReady() { return !!window.__fbReady && !!window.__db; }
+
+    // ── localStorage fallback للبيانات الثانوية ──
+    function lsGet(key, fallback) {
+      try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; }
+    }
+    function lsSet(key, val) {
+      try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {}
+    }
+    function notifyOtherTab(key) {
+      // Firebase real-time يتولى التزامن
+    }
+
+    // ── Firebase CRUD ──
+    async function fbSaveAppointment(appt) {
+      if (!fbReady()) return;
+      const { doc, setDoc } = getFb();
+      await setDoc(doc(getDb(), 'appointments', appt.id), appt);
+    }
+    async function fbUpdateAppointmentField(id, fields) {
+      if (!fbReady()) return;
+      const { doc, updateDoc } = getFb();
+      await updateDoc(doc(getDb(), 'appointments', id), fields);
+    }
+    async function fbSavePatient(patient) {
+      if (!fbReady()) return;
+      const { doc, setDoc } = getFb();
+      await setDoc(doc(getDb(), 'patients', patient.id), patient);
+    }
+    async function fbUpdatePatient(patientId, data) {
+      if (!fbReady()) return;
+      const { doc, updateDoc } = getFb();
+      await updateDoc(doc(getDb(), 'patients', patientId), data);
+    }
+    async function fbDeletePatient(id) {
+      if (!fbReady()) return;
+      const { doc, deleteDoc } = getFb();
+      await deleteDoc(doc(getDb(), 'patients', id));
+    }
+    async function fbSaveNotes(notes) {
+      if (!fbReady()) return;
+      const { doc, setDoc } = getFb();
+      await setDoc(doc(getDb(), 'settings', 'sharedNotes'), { notes });
+    }
+    async function fbSendNurseAlert(payload) {
+      if (!fbReady()) return;
+      const { doc, setDoc } = getFb();
+      await setDoc(doc(getDb(), 'settings', 'nurseAlert'), payload);
+    }
+
+    // ── Firebase real-time listeners ──
+    function initFirebaseListeners() {
+      const db = getDb();
+      const { collection, doc, onSnapshot } = getFb();
+
+      onSnapshot(collection(db, 'appointments'), (snap) => {
+        allRecords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+        renderCalendar();
+        if (selectedDayStr) renderAgendaForDay(selectedDayStr);
+        if (currentSection === 'stats') updateStats(false);
+      });
+
+      onSnapshot(collection(db, 'patients'), (snap) => {
+        allPatients = {};
+        snap.docs.forEach(d => { allPatients[d.id] = { id: d.id, ...d.data() }; });
+        document.getElementById('totalPatientsCount').textContent = Object.keys(allPatients).length;
+        if (currentSection === 'patients') renderPatientBook();
+      });
+
+      onSnapshot(collection(db, 'settings'), (snap) => {
+        snap.docs.forEach(d => {
+          if (d.id === 'closedDays') {
+            renderCalendar();
+            if (selectedDayStr) renderAgendaForDay(selectedDayStr);
+          }
+        });
+      });
+    }
+
+    const daysAr = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+    const monthsAr = ["يناير", "فبراير", "مارس", "أبريل", "مايو", "يونيو", "يوليو", "أغسطس", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
+
+    const today = new Date(); today.setHours(0,0,0,0);
+    const todayStr = toLocalISODate(today);
+    const maxFutureDate = new Date(); maxFutureDate.setMonth(maxFutureDate.getMonth() + 3); maxFutureDate.setHours(23,59,59,999);
+    const thirtyDaysAgo = new Date(); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30); thirtyDaysAgo.setHours(0,0,0,0);
+    const thirtyDaysAgoStr = toLocalISODate(thirtyDaysAgo);
+
+    let allRecords = [];
+    let allPatients = {};
+    let currentDate = new Date();
+    let selectedDayStr = todayStr;
+    let currentSection = 'calendar';
+    let currentPatientIdForVisit = null;
+    let currentChartPeriod = 'monthly';
+
+    // ==================== دوال مساعدة ====================
+    function toLocalISODate(date) { const y=date.getFullYear(); const m=String(date.getMonth()+1).padStart(2,'0'); const d=String(date.getDate()).padStart(2,'0'); return `${y}-${m}-${d}`; }
+    function parseLocalISODate(s) { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+    function normalizeDate(d) { if(!d) return ''; if(typeof d==='string') return d.split('T')[0]; if(d.toDate) return toLocalISODate(d.toDate()); return ''; }
+    function formatDateAr(s) { if(!s) return '-'; const d=parseLocalISODate(s); return d.toLocaleDateString('ar-EG',{year:'numeric',month:'long',day:'numeric'}); }
+    function calculateAge(b) { if(!b) return null; const birth=new Date(b); let age=today.getFullYear()-birth.getFullYear(); const m=today.getMonth()-birth.getMonth(); if(m<0 || (m===0 && today.getDate()<birth.getDate())) age--; return age; }
+    function showToast(msg, type='info') { const toast=document.getElementById('toast'); const content=document.getElementById('toastContent'); content.innerHTML = `<i class="fas fa-${type==='success'?'check-circle':'info-circle'}"></i> ${msg}`; toast.classList.remove('hidden'); setTimeout(()=>toast.classList.add('hidden'),3000); }
+    function normalizePhone(p) { return (p||'').replace(/[^\d+]/g,''); }
+    function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text; return div.innerHTML; }
+
+    // ==================== تحميل البيانات ====================
+    function loadData() {
+      function start() {
+        initFirebaseListeners();
+        renderCalendar();
+        if (selectedDayStr) renderAgendaForDay(selectedDayStr);
+        renderPatientBook();
+      }
+      if (fbReady()) { start(); }
+      else { document.addEventListener('firebase-ready', start, { once: true }); }
+    }
+
+    // الاستماع لتغييرات من التاب الآخر — Firebase يتولى هذا
+    // window.addEventListener('storage', ...) → لم يعد مطلوباً
+
+    // ==================== دوال الإحصائيات ====================
+    function calculateStatsFromPatients() {
+      let totalVisits = 0;
+      let activeCount = 0;
+      let morningCount = 0;
+      let eveningCount = 0;
+      let repeatPatients = 0;
+      let totalDurationSec = 0;
+      let durationCount = 0;
+      let onlineCount = 0;
+      let manualCount = 0;
+      const totalPatients = Object.keys(allPatients).length;
+      
+      let allVisits = [];
+
+      Object.values(allPatients).forEach(patient => {
+        totalVisits += patient.totalVisits || 0;
+        if (patient.totalVisits > 1) repeatPatients++;
+        if (patient.lastVisit && patient.lastVisit >= thirtyDaysAgoStr) activeCount++;
+        
+        if (patient.appointments) {
+          patient.appointments.forEach(v => {
+            if (v.slot === 'Morning') morningCount++;
+            else if (v.slot === 'Evening') eveningCount++;
+            
+            if (v.source === 'manual') manualCount++;
+            else onlineCount++;
+
+            if (v.visitDurationSec) {
+              totalDurationSec += v.visitDurationSec;
+              durationCount++;
+            }
+            allVisits.push({ patientName: patient.name, date: v.date, visitType: v.visitType });
+          });
+        }
+      });
+
+      allVisits.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+      const recentVisits = allVisits.slice(0,30);
+      const repeatRate = totalPatients ? ((repeatPatients / totalPatients) * 100).toFixed(1) : 0;
+      const avgDurationSec = durationCount ? Math.round(totalDurationSec / durationCount) : 0;
+
+      return { totalVisits, activeCount, repeatRate, morningCount, eveningCount, onlineCount, manualCount, avgDurationSec, durationCount, recentVisits };
+    }
+
+    function calculateCancelledAppointments() {
+      return allRecords.filter(r => r.Status === 'Cancelled' || r.Status === 'Rejected').length;
+    }
+
+    function updateStats(useAnimation = true) {
+      const stats = calculateStatsFromPatients();
+      const cancelled = calculateCancelledAppointments();
+      
+      const activeEl = document.getElementById('statActiveUsers');
+      const totalVisitsEl = document.getElementById('statTotalVisits');
+      const cancelledEl = document.getElementById('statCancelled');
+      const repeatEl = document.getElementById('statConversion');
+
+      if (useAnimation) {
+        animateNumber(activeEl, stats.activeCount);
+        animateNumber(totalVisitsEl, stats.totalVisits);
+        animateNumber(cancelledEl, cancelled);
+        animateNumber(repeatEl, stats.repeatRate, '%');
+      } else {
+        activeEl.textContent = stats.activeCount;
+        totalVisitsEl.textContent = stats.totalVisits;
+        cancelledEl.textContent = cancelled;
+        repeatEl.textContent = stats.repeatRate + '%';
+      }
+
+      // Donut 1: Morning / Evening
+      animateDonut('donut1Seg1', 'donut1Seg2', 'donut1Total', 'donut1Legend', 
+        stats.morningCount, stats.eveningCount, '#fbbf24', '#6366f1', 'صباحي', 'مسائي', 'موعد', useAnimation);
+
+      // Donut 2: Online / Manual
+      animateDonut('donut2Seg1', 'donut2Seg2', 'donut2Total', 'donut2Legend', 
+        stats.onlineCount, stats.manualCount, '#22c55e', '#f43f5e', 'أونلاين', 'يدوي', 'موعد', useAnimation);
+
+      // Donut 3: Avg Duration
+      const avgDurStr = formatTime(stats.avgDurationSec);
+      document.getElementById('avgDurationVal').textContent = avgDurStr;
+      document.getElementById('durationLegend').innerHTML = `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:10px;">
+          <div style="display:flex;align-items:center;gap:8px;"><div style="width:12px;height:12px;border-radius:3px;background:#0d9488;flex-shrink:0;"></div><span style="font-size:.82rem;font-weight:600;color:var(--text-primary);">متوسط الزمن</span></div>
+          <span style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;color:var(--text-primary);">${avgDurStr} <span style="color:var(--text-muted);font-weight:500;">(${stats.durationCount} كشف)</span></span>
+        </div>
+      `;
+
+      const tbody = document.getElementById('recentAppointmentsTable');
+      if (stats.recentVisits.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="3" style="text-align:center;padding:16px 0;color:var(--text-muted)">لا توجد زيارات</td></tr>';
+      } else {
+        tbody.innerHTML = stats.recentVisits.map(v => 
+          `<tr><td>${escapeHtml(v.patientName)}</td><td>${v.visitType||'-'}</td><td>${formatDateAr(v.date)}</td></tr>`
+        ).join('');
+      }
+
+      renderChart(useAnimation);
+    }
+
+    function animateDonut(seg1Id, seg2Id, totalId, legendId, val1, val2, color1, color2, label1, label2, unit, animate) {
+      const total = val1 + val2;
+      const angle1 = total ? (val1 / total) * 389.6 : 0;
+      const angle2 = total ? (val2 / total) * 389.6 : 0;
+      
+      const s1 = document.getElementById(seg1Id);
+      const s2 = document.getElementById(seg2Id);
+      if(s1) {
+        s1.setAttribute('stroke-dasharray', `${angle1} 389.6`);
+      }
+      if(s2) {
+        s2.setAttribute('stroke-dasharray', `${angle2} 389.6`);
+        s2.setAttribute('stroke-dashoffset', -angle1);
+      }
+      
+      const totalEl = document.getElementById(totalId);
+      if(totalEl) {
+        if(animate) animateNumber(totalEl, total);
+        else totalEl.textContent = total;
+      }
+
+      const p1 = total ? ((val1/total)*100).toFixed(1) : '0.0';
+      const p2 = total ? ((val2/total)*100).toFixed(1) : '0.0';
+      
+      const legendEl = document.getElementById(legendId);
+      if(legendEl) {
+        legendEl.innerHTML = `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:10px;">
+            <div style="display:flex;align-items:center;gap:8px;"><div style="width:12px;height:12px;border-radius:3px;background:${color1};flex-shrink:0;"></div><span style="font-size:.82rem;font-weight:600;color:var(--text-primary);">${label1}</span></div>
+            <span style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;color:var(--text-primary);">${val1} <span style="color:var(--text-muted);font-weight:500;">(${p1}%)</span></span>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:var(--bg);border-radius:10px;">
+            <div style="display:flex;align-items:center;gap:8px;"><div style="width:12px;height:12px;border-radius:3px;background:${color2};flex-shrink:0;"></div><span style="font-size:.82rem;font-weight:600;color:var(--text-primary);">${label2}</span></div>
+            <span style="font-family:'DM Mono',monospace;font-size:.82rem;font-weight:700;color:var(--text-primary);">${val2} <span style="color:var(--text-muted);font-weight:500;">(${p2}%)</span></span>
+          </div>
+        `;
+      }
+    }
+
+    function formatTime(seconds) {
+      const m = Math.floor(seconds / 60);
+      const s = seconds % 60;
+      return (m < 10 ? '0' + m : m) + ':' + (s < 10 ? '0' + s : s);
+    }
+
+    function animateNumber(element, target, suffix = '', duration = 500) {
+      if (!element) return;
+      const start = 0;
+      const increment = target / (duration / 16);
+      let current = start;
+      const step = () => {
+        current += increment;
+        if (current >= target) {
+          element.textContent = target + suffix;
+          return;
+        }
+        element.textContent = Math.floor(current) + suffix;
+        requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+
+    // ==================== مخطط تحليلات المواعيد مع إمكانية النقر ====================
+    function renderChart(animate = false) {
+      const chartContainer = document.getElementById('appointmentsChart');
+      const yAxis = document.getElementById('chartYAxis');
+      if (!chartContainer) return;
+
+      const months = monthsAr;
+      const weeks = ['الأسبوع 1', 'الأسبوع 2', 'الأسبوع 3', 'الأسبوع 4'];
+      const days = daysAr;
+      
+      let labels = months;
+      let data = Array(12).fill(0);
+      let periods = [];
+      
+      const accepted = allRecords.filter(r => r.Status === 'Accepted');
+
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      const currentMonth = now.getMonth();
+      const firstDayOfMonth = new Date(currentYear, currentMonth, 1);
+      const lastDayOfMonth = new Date(currentYear, currentMonth + 1, 0);
+      const daysInMonth = lastDayOfMonth.getDate();
+
+      if (currentChartPeriod === 'weekly') {
+        labels = weeks;
+        data = Array(4).fill(0);
+        periods = [];
+        
+        for (let week = 0; week < 4; week++) {
+          const startDay = week * 7 + 1;
+          const endDay = Math.min((week + 1) * 7, daysInMonth);
+          const startDate = toLocalISODate(new Date(currentYear, currentMonth, startDay));
+          const endDate = toLocalISODate(new Date(currentYear, currentMonth, endDay));
+          periods.push({ label: `الأسبوع ${week + 1}`, start: startDate, end: endDate });
+        }
+
+        accepted.forEach(record => {
+          const recordDate = parseLocalISODate(normalizeDate(record.Date));
+          if (recordDate >= firstDayOfMonth && recordDate <= lastDayOfMonth) {
+            const day = recordDate.getDate();
+            const weekNum = Math.floor((day - 1) / 7);
+            if (weekNum >= 0 && weekNum < 4) data[weekNum]++;
+          }
+        });
+      } else if (currentChartPeriod === 'daily') {
+        labels = days;
+        data = Array(7).fill(0);
+        periods = [];
+        
+        const firstDayOfWeek = new Date(now);
+        firstDayOfWeek.setDate(now.getDate() - now.getDay());
+        firstDayOfWeek.setHours(0, 0, 0, 0);
+        
+        for (let d = 0; d < 7; d++) {
+          const dayDate = new Date(firstDayOfWeek);
+          dayDate.setDate(firstDayOfWeek.getDate() + d);
+          periods.push({ label: daysAr[d], date: toLocalISODate(dayDate) });
+        }
+
+        accepted.forEach(record => {
+          const recordDate = parseLocalISODate(normalizeDate(record.Date));
+          const diffDays = Math.floor((recordDate - firstDayOfWeek) / (1000 * 60 * 60 * 24));
+          if (diffDays >= 0 && diffDays < 7) {
+            data[diffDays]++;
+          }
+        });
+      } else { // monthly
+        labels = months;
+        data = Array(12).fill(0);
+        periods = months.map((m, idx) => ({ label: m, month: idx }));
+
+        accepted.forEach(record => {
+          const month = parseLocalISODate(normalizeDate(record.Date)).getMonth();
+          data[month]++;
+        });
+      }
+      
+      const maxValue = Math.max(...data, 1);
+      
+      yAxis.innerHTML = '';
+      for (let i = 5; i >= 0; i--) {
+        const value = Math.round((maxValue / 5) * i);
+        yAxis.innerHTML += `<span class="y-value">${value}</span>`;
+      }
+
+      chartContainer.innerHTML = labels.map((label, index) => {
+        const height = (data[index] / maxValue) * 190;
+        const isMax = data[index] === maxValue && data[index] > 0;
+        const barStyle = isMax
+          ? 'background:linear-gradient(180deg,#f59e0b,#d97706);box-shadow:0 0 12px rgba(245,158,11,.45);'
+          : 'background:linear-gradient(180deg,var(--primary),var(--primary-hover));';
+        const animStyle = animate ? `height:0px;transition:height .6s cubic-bezier(.4,0,.2,1) ${index*40}ms;` : `height:${height}px;`;
+        
+        return `<div class="chart-bar-group" onclick="showColumnDetails(${index})">
+                  <div class="chart-bar" style="${animStyle}${barStyle}" data-h="${height}"></div>
+                  <span class="chart-label">${label.substring(0, 3)}</span>
+                </div>`;
+      }).join('');
+
+      if (animate) {
+        requestAnimationFrame(() => requestAnimationFrame(() => {
+          chartContainer.querySelectorAll('.chart-bar').forEach(bar => {
+            bar.style.height = bar.dataset.h + 'px';
+          });
+        }));
+      }
+
+      window.__chartData = { periods, data, currentChartPeriod };
+    }
+
+    window.showColumnDetails = function(index) {
+      const chartData = window.__chartData;
+      if (!chartData) return;
+      const period = chartData.periods[index];
+      if (!period) return;
+
+      let total = 0, morning = 0, evening = 0, cancelledCount = 0;
+      const accepted = allRecords.filter(r => r.Status === 'Accepted');
+      const cancelled = allRecords.filter(r => r.Status === 'Cancelled' || r.Status === 'Rejected');
+
+      if (chartData.currentChartPeriod === 'monthly') {
+        const month = period.month;
+        total = accepted.filter(r => parseLocalISODate(normalizeDate(r.Date)).getMonth() === month).length;
+        morning = accepted.filter(r => parseLocalISODate(normalizeDate(r.Date)).getMonth() === month && (r.Slot||'Morning') === 'Morning').length;
+        evening = accepted.filter(r => parseLocalISODate(normalizeDate(r.Date)).getMonth() === month && (r.Slot||'Evening') === 'Evening').length;
+        cancelledCount = cancelled.filter(r => parseLocalISODate(normalizeDate(r.Date)).getMonth() === month).length;
+        var title = `تفاصيل شهر ${period.label}`;
+      } else if (chartData.currentChartPeriod === 'weekly') {
+        const start = period.start, end = period.end;
+        total = accepted.filter(r => normalizeDate(r.Date) >= start && normalizeDate(r.Date) <= end).length;
+        morning = accepted.filter(r => normalizeDate(r.Date) >= start && normalizeDate(r.Date) <= end && (r.Slot||'Morning') === 'Morning').length;
+        evening = accepted.filter(r => normalizeDate(r.Date) >= start && normalizeDate(r.Date) <= end && (r.Slot||'Evening') === 'Evening').length;
+        cancelledCount = cancelled.filter(r => normalizeDate(r.Date) >= start && normalizeDate(r.Date) <= end).length;
+        var title = `تفاصيل ${period.label}`;
+      } else if (chartData.currentChartPeriod === 'daily') {
+        const date = period.date;
+        total = accepted.filter(r => normalizeDate(r.Date) === date).length;
+        morning = accepted.filter(r => normalizeDate(r.Date) === date && (r.Slot||'Morning') === 'Morning').length;
+        evening = accepted.filter(r => normalizeDate(r.Date) === date && (r.Slot||'Evening') === 'Evening').length;
+        cancelledCount = cancelled.filter(r => normalizeDate(r.Date) === date).length;
+        var title = `تفاصيل ${period.label} ${formatDateAr(date)}`;
+      }
+
+      document.getElementById('dayDetailsTitle').textContent = title;
+      document.getElementById('dayDetailsContent').innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:14px;text-align:center;">
+            <p style="font-size:.82rem;color:var(--text-muted);">إجمالي المواعيد</p>
+            <p style="font-size:2rem;font-weight:800;font-family:'DM Mono',monospace;">${total}</p>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="background:var(--amber-light);border-radius:var(--radius-sm);padding:12px;text-align:center;">
+              <p style="font-size:.78rem;color:var(--text-muted);">صباحاً</p>
+              <p style="font-size:1.6rem;font-weight:800;font-family:'DM Mono',monospace;">${morning}</p>
+            </div>
+            <div style="background:#eff6ff;border-radius:var(--radius-sm);padding:12px;text-align:center;">
+              <p style="font-size:.78rem;color:var(--text-muted);">مساءً</p>
+              <p style="font-size:1.6rem;font-weight:800;font-family:'DM Mono',monospace;">${evening}</p>
+            </div>
+          </div>
+          <div style="background:var(--red-light);border-radius:var(--radius-sm);padding:12px;text-align:center;">
+            <p style="font-size:.78rem;color:var(--text-muted);">الملغاة / المرفوضة</p>
+            <p style="font-size:1.6rem;font-weight:800;color:var(--red);font-family:'DM Mono',monospace;">${cancelledCount}</p>
+          </div>
+        </div>`;
+      document.getElementById('dayDetailsModal').classList.remove('hidden');
+    };
+
+    window.updateChartPeriod = function(period) {
+      currentChartPeriod = period;
+      document.querySelectorAll('#statsSection .card-actions .card-btn').forEach(btn => btn.classList.remove('active'));
+      event.target.classList.add('active');
+      renderChart(true);
+    };
+
+    window.showStatInfo = function(type) {
+      const titleMap = { active: 'المرضى النشطين', total: 'إجمالي الزيارات', cancelled: 'المواعيد الملغاة', repeat: 'نسبة التكرار' };
+      const descMap = { 
+        active: 'عدد المرضى الذين قاموا بزيارة واحدة على الأقل خلال آخر 30 يوم.', 
+        total: 'مجموع كل الزيارات المسجلة في دفتر المرضى.', 
+        cancelled: 'عدد المواعيد التي تم إلغاؤها أو رفضها.', 
+        repeat: 'النسبة المئوية للمرضى الذين زاروا العيادة أكثر من مرة.' 
+      };
+      document.getElementById('statInfoTitle').textContent = titleMap[type] || 'معلومات';
+      document.getElementById('statInfoDescription').innerHTML = `<p style="color:var(--text-secondary);line-height:1.75">${descMap[type] || ''}</p>`;
+      document.getElementById('statInfoModal').classList.remove('hidden');
+    };
+
+    window.closeStatInfoModal = function() { document.getElementById('statInfoModal').classList.add('hidden'); };
+    
+    document.getElementById('statInfoModal')?.addEventListener('click', function(e) {
+      if (e.target === this) this.classList.add('hidden');
+    });
+
+    // ==================== التقويم ====================
+    function renderCalendar() {
+      const grid = document.getElementById('calendarGrid');
+      if (!grid) return;
+      grid.innerHTML = '';
+      const year = currentDate.getFullYear(), month = currentDate.getMonth();
+      document.getElementById('currentMonth').textContent = `${monthsAr[month]} ${year}`;
+      const firstDay = new Date(year, month, 1).getDay();
+      const daysInMonth = new Date(year, month + 1, 0).getDate();
+      let startOffset = (firstDay + 2) % 7;
+      for (let i = startOffset - 1; i >= 0; i--) { 
+        const d = document.createElement('div'); 
+        d.className = 'compact-calendar-day other-month'; 
+        d.textContent = ''; 
+        grid.appendChild(d); 
+      }
+      for (let d = 1; d <= daysInMonth; d++) {
+        const dateObj = new Date(year, month, d); dateObj.setHours(0,0,0,0);
+        const dateStr = toLocalISODate(dateObj);
+        const dayDiv = document.createElement('div'); 
+        dayDiv.className = 'compact-calendar-day'; 
+        dayDiv.textContent = d;
+        
+        if (dateObj < today) dayDiv.classList.add('past-day');
+        if (dateObj.getTime() === today.getTime()) dayDiv.classList.add('today');
+        if (selectedDayStr === dateStr) dayDiv.classList.add('selected');
+        
+        // تمكين الضغط على جميع الأيام بما فيها الماضية
+        dayDiv.addEventListener('click', () => selectDay(dateStr));
+        
+        // عرض نقاط المواعيد لجميع الأيام (الماضية والمستقبلية)
+        const dayRecords = allRecords.filter(r => 
+          ['Accepted', 'Visited', 'NoShow'].includes(r.Status) && r.Date === dateStr
+        );
+        const acceptedCount = dayRecords.length;
+        
+        if (acceptedCount > 0) {
+          const dot = document.createElement('div');
+          dot.className = `compact-appointment-dot ${acceptedCount <=2 ? 'compact-dot-low' : acceptedCount <=4 ? 'compact-dot-medium' : 'compact-dot-high'}`;
+          dayDiv.appendChild(dot);
+        }
+        grid.appendChild(dayDiv);
+      }
+    }
+
+    function selectDay(dateStr) { selectedDayStr = dateStr; renderCalendar(); renderAgendaForDay(dateStr); }
+    
+    window.goToToday = function() {
+      currentDate = new Date(today);
+      const todayStr = toLocalISODate(today);
+      selectedDayStr = todayStr;
+      setActiveSection('calendar');
+      renderCalendar();
+      renderAgendaForDay(todayStr);
+    };
+    
+    window.showDayDetails = function() {
+      if (!selectedDayStr) return;
+      const dateStr = selectedDayStr;
+      const normDate = (d) => (d||'').toString().trim().substring(0,10);
+      
+      // جلب جميع المواعيد الفعالة (مقبولة، تمت الزيارة، أو لم يحضر)
+      const activeRecords = allRecords.filter(r => 
+        ['Accepted', 'Visited', 'NoShow'].includes(r.Status) && normDate(r.Date) === dateStr
+      );
+      
+      // جلب المواعيد الملغاة أو المرفوضة
+      const cancelled = allRecords.filter(r => 
+        (r.Status === 'Cancelled' || r.Status === 'Rejected') && normDate(r.Date) === dateStr
+      );
+      
+      const total = activeRecords.length + cancelled.length;
+      const morning = activeRecords.filter(r => (r.Slot||'Morning') === 'Morning').length;
+      const evening = activeRecords.filter(r => (r.Slot||'Evening') === 'Evening').length;
+      const cancelledCount = cancelled.length;
+
+      document.getElementById('dayDetailsTitle').textContent = `تفاصيل ${formatDateAr(dateStr)}`;
+      document.getElementById('dayDetailsContent').innerHTML = `
+        <div style="display:flex;flex-direction:column;gap:12px;">
+          <div style="background:var(--primary-light);border-radius:var(--radius-sm);padding:14px;text-align:center;">
+            <p style="font-size:.82rem;color:var(--text-muted);">إجمالي المواعيد</p>
+            <p style="font-size:2rem;font-weight:800;font-family:'DM Mono',monospace;">${total}</p>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+            <div style="background:var(--amber-light);border-radius:var(--radius-sm);padding:12px;text-align:center;">
+              <p style="font-size:.78rem;color:var(--text-muted);">صباحاً</p>
+              <p style="font-size:1.6rem;font-weight:800;font-family:'DM Mono',monospace;">${morning}</p>
+            </div>
+            <div style="background:#eff6ff;border-radius:var(--radius-sm);padding:12px;text-align:center;">
+              <p style="font-size:.78rem;color:var(--text-muted);">مساءً</p>
+              <p style="font-size:1.6rem;font-weight:800;font-family:'DM Mono',monospace;">${evening}</p>
+            </div>
+          </div>
+          <div style="background:var(--red-light);border-radius:var(--radius-sm);padding:12px;text-align:center;">
+            <p style="font-size:.78rem;color:var(--text-muted);">الملغاة / المرفوضة</p>
+            <p style="font-size:1.6rem;font-weight:800;color:var(--red);font-family:'DM Mono',monospace;">${cancelledCount}</p>
+          </div>
+        </div>`;
+      document.getElementById('dayDetailsModal').classList.remove('hidden');
+    };
+    window.closeDayDetailsModal = function() { document.getElementById('dayDetailsModal').classList.add('hidden'); };
+    function renderAgendaForDay(dateStr) {
+      const isPast = parseLocalISODate(dateStr) < today;
+      document.getElementById('agendaTitle').textContent = `${daysAr[parseLocalISODate(dateStr).getDay()]} — ${formatDateAr(dateStr)}`;
+
+      const emptyMsg = (slot) => `<div style="text-align:center; padding:16px 0; color:var(--text-muted); font-size:.85rem; font-weight:500;">لا توجد مواعيد ${slot}</div>`;
+
+      if (isPast) {
+        // الأيام السابقة: عرض جميع الحالات (حضر، لم يحضر، ملغاة)
+        const accepted   = allRecords.filter(r => r.Status === 'Accepted'  && r.Date === dateStr);
+        const visited    = allRecords.filter(r => r.Status === 'Visited'   && r.Date === dateStr);
+        const noShow     = allRecords.filter(r => r.Status === 'NoShow'    && r.Date === dateStr);
+        const cancelled  = allRecords.filter(r => (r.Status === 'Cancelled' || r.Status === 'Rejected') && r.Date === dateStr);
+
+        const allDayRecords = [...accepted, ...visited, ...noShow, ...cancelled];
+        const morning = allDayRecords.filter(r => (r.Slot || 'Morning') === 'Morning');
+        const evening = allDayRecords.filter(r =>  r.Slot === 'Evening');
+
+        const totalShown = visited.length + accepted.length;
+        const summary = `زيارات: ${totalShown}${noShow.length ? ' · لم يحضر: ' + noShow.length : ''}${cancelled.length ? ' · ملغاة: ' + cancelled.length : ''}`;
+        document.getElementById('agendaCount').textContent = summary;
+        document.getElementById('agendaMorningCount').textContent = morning.length;
+        document.getElementById('agendaEveningCount').textContent = evening.length;
+
+        const pastAgendaCard = (r) => {
+          let badgeBg, badgeColor, badgeBorder, badgeIcon, badgeText;
+          if (r.Status === 'Visited') {
+            badgeBg = '#dcfce7'; badgeColor = '#16a34a'; badgeBorder = '#86efac';
+            badgeIcon = 'fa-check-circle'; badgeText = 'تمت الزيارة';
+          } else if (r.Status === 'NoShow') {
+            badgeBg = '#fee2e2'; badgeColor = '#dc2626'; badgeBorder = '#fca5a5';
+            badgeIcon = 'fa-user-times'; badgeText = 'لم يحضر';
+          } else if (r.Status === 'Cancelled' || r.Status === 'Rejected') {
+            badgeBg = '#fef3c7'; badgeColor = '#d97706'; badgeBorder = '#fde68a';
+            badgeIcon = 'fa-ban'; badgeText = 'تم الإلغاء';
+          } else {
+            // Accepted but past (لم يُغلق اليوم) — نعرضه كموعد مؤكد قديم
+            badgeBg = 'var(--primary-light)'; badgeColor = 'var(--primary)'; badgeBorder = 'var(--border-strong)';
+            badgeIcon = 'fa-calendar-check'; badgeText = 'مؤكد';
+          }
+          return `<div style="background:var(--primary-faint);border:1.5px solid ${badgeBorder};border-radius:12px;padding:12px;margin-bottom:8px;opacity:.88;">
+            <div class="flex justify-between items-start">
+              <div>
+                <p class="font-bold" style="color:var(--text-primary)">${r.PatientName}</p>
+                <p class="text-xs mt-1" style="color:var(--primary)">${r.Phone}</p>
+              </div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+                <span style="font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:700;background:${badgeBg};color:${badgeColor};border:1px solid ${badgeBorder};">
+                  <i class="fas ${badgeIcon}" style="margin-left:3px;font-size:.65rem;"></i>${badgeText}
+                </span>
+                <span style="font-size:.7rem;color:var(--text-muted);">${r.VisitType || ''} · ${r.Slot === 'Evening' ? 'مساءً' : 'صباحاً'}</span>
+              </div>
+            </div>
+          </div>`;
+        };
+
+        document.getElementById('agendaMorning').innerHTML = morning.length ? morning.map(pastAgendaCard).join('') : emptyMsg('صباحية');
+        document.getElementById('agendaEvening').innerHTML = evening.length ? evening.map(pastAgendaCard).join('') : emptyMsg('مسائية');
+
+      } else {
+        // اليوم الحالي أو المستقبل: عرض المواعيد المؤكدة فقط
+        const accepted = allRecords.filter(r => r.Status === 'Accepted' && r.Date === dateStr);
+        const morning = accepted.filter(r => (r.Slot || 'Morning') === 'Morning');
+        const evening = accepted.filter(r =>  r.Slot === 'Evening');
+        document.getElementById('agendaCount').textContent = `عدد المواعيد المؤكدة: ${accepted.length}`;
+        document.getElementById('agendaMorningCount').textContent = morning.length;
+        document.getElementById('agendaEveningCount').textContent = evening.length;
+        document.getElementById('agendaMorning').innerHTML = morning.length ? morning.map(r => agendaCardHTML(r)).join('') : emptyMsg('صباحية');
+        document.getElementById('agendaEvening').innerHTML = evening.length ? evening.map(r => agendaCardHTML(r)).join('') : emptyMsg('مسائية');
+      }
+    }
+
+    function agendaCardHTML(record) {
+      return `<div style="background:var(--primary-faint);border:1.5px solid var(--border);border-radius:12px;padding:12px;margin-bottom:8px;">
+        <div class="flex justify-between items-start">
+          <div><p class="font-bold" style="color:var(--text-primary)">${record.PatientName}</p><p class="text-xs mt-1" style="color:var(--primary)">${record.Phone}</p></div>
+          <div class="flex gap-1">
+            <a href="tel:${normalizePhone(record.Phone)}" style="width:28px;height:28px;border-radius:8px;background:#2563eb;color:white;display:flex;align-items:center;justify-content:center;font-size:.8rem;"><i class="fas fa-phone"></i></a>
+            <a href="https://wa.me/${normalizePhone(record.Phone)}" target="_blank" style="width:28px;height:28px;border-radius:8px;color:white;display:flex;align-items:center;justify-content:center;font-size:.8rem;background:#25D366;"><i class="fab fa-whatsapp"></i></a>
+            <button style="width:28px;height:28px;border-radius:8px;background:var(--primary);color:white;display:flex;align-items:center;justify-content:center;font-size:.8rem;border:none;cursor:pointer;" onclick="openAppointmentDetailsModal('${record.id}')"><i class="fas fa-eye"></i></button>
+          </div>
+        </div>
+        <div class="mt-2 text-xs" style="color:var(--text-muted)">${record.VisitType} · ${record.Slot==='Morning'?'صباحاً':'مساءً'}</div>
+      </div>`;
+    }
+
+    // ==================== مودال تفاصيل الموعد (معدل) ====================
+    window.openAppointmentDetailsModal = function(id) {
+      const record = allRecords.find(r => r.id === id);
+      if (!record) return;
+      
+      const phone = record.Phone || record.phone || '-';
+      const slotAr = record.Slot === 'Morning' ? 'صباحاً' : 'مساءً';
+      const dateStr = record.Date ? formatDateAr(record.Date) : '-';
+
+      // Header - اسم اليوم والتاريخ
+      document.getElementById('modalAgendaTitle').textContent = dateStr;
+      document.getElementById('modalAgendaCount').textContent = '';
+
+      // Slot badge
+      const slotBadge = document.getElementById('slotBadge');
+      if (slotBadge) {
+        slotBadge.textContent = record.Slot === 'Morning' ? 'الصباح' : 'المساء';
+      }
+      // Visit type badge
+      const visitTypeBadge = document.getElementById('visitTypeBadge');
+      if (visitTypeBadge) {
+        visitTypeBadge.textContent = record.VisitType || '-';
+      }
+
+      // Contact card
+      const nameHeader = document.getElementById('appDetailsNameHeader');
+      if (nameHeader) nameHeader.textContent = record.PatientName || '-';
+      document.getElementById('appDetailsPhone').textContent = phone;
+      document.getElementById('appDetailsWhatsappBtn').href = `https://wa.me/${normalizePhone(phone)}`;
+      document.getElementById('appDetailsCallBtn').href = `tel:${normalizePhone(phone)}`;
+
+      // Info grid
+      document.getElementById('appDetailsName').textContent = record.PatientName || '-';
+      document.getElementById('appDetailsPhoneInfo').textContent = phone;
+      document.getElementById('appDetailsBirthDate').textContent = record.BirthDate ? formatDateAr(record.BirthDate) : '-';
+      const age = record.BirthDate ? calculateAge(record.BirthDate) : '-';
+      document.getElementById('appDetailsAge').textContent = age !== '-' ? age + ' سنة' : '-';
+      document.getElementById('appDetailsAddress').textContent = record.Address || '-';
+      
+      // Hidden fields
+      document.getElementById('appDetailsVisitType').textContent = record.VisitType || '-';
+      document.getElementById('appDetailsSlot').textContent = slotAr;
+      document.getElementById('appDetailsDate').textContent = dateStr;
+      
+      document.getElementById('appointmentDetailsModal').classList.remove('hidden');
+    };
+
+    window.closeAppointmentDetailsModal = function() { document.getElementById('appointmentDetailsModal').classList.add('hidden'); };
+
+    // ==================== دفتر المرضى ====================
+    function renderPatientBook() {
+      const grid = document.getElementById('patientsGrid');
+      const search = document.getElementById('patientBookSearch').value.toLowerCase();
+      let patients = Object.values(allPatients);
+      if (search) patients = patients.filter(p => (p.name||'').toLowerCase().includes(search) || (p.phone||'').includes(search));
+      if (!patients.length) { grid.innerHTML = '<div style="grid-column:1/-1;text-align:center;padding:32px 0;color:var(--text-muted)">لا يوجد مرضى</div>'; return; }
+      grid.innerHTML = patients.map(p => {
+        const phone = normalizePhone(p.phone);
+        return `<div class="patient-card">
+          <div class="patient-name">${escapeHtml(p.name)}</div>
+          <div class="patient-phone"><i class="fas fa-phone"></i>${escapeHtml(p.phone)}</div>
+          <div style="font-size:.75rem; color:var(--primary); margin-top:4px; font-weight:600;">${p.totalVisits||0} زيارة</div>
+          <div class="patient-actions">
+            <button class="patient-action-btn secondary" onclick="openPatientDetailsModal('${p.id}')"><i class="fas fa-eye"></i> تفاصيل</button>
+            <a href="tel:${phone}" class="patient-action-btn primary" style="text-decoration:none;"><i class="fas fa-phone"></i> اتصال</a>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    window.openPatientDetailsModal = function(patientId) {
+      const p = allPatients[patientId];
+      if (!p) return;
+      currentPatientIdForVisit = patientId;
+      document.getElementById('modalPatientName').textContent = p.name;
+      document.getElementById('modalPatientPhone').textContent = p.phone;
+      document.getElementById('modalWhatsappBtn').href = `https://wa.me/${normalizePhone(p.phone)}`;
+      document.getElementById('modalCallBtn').href = `tel:${normalizePhone(p.phone)}`;
+      document.getElementById('modalPatientBirthDate').textContent = p.birthDate ? formatDateAr(p.birthDate) : '-';
+      const age = p.birthDate ? calculateAge(p.birthDate) : '-';
+      document.getElementById('modalPatientAge').textContent = age !== '-' ? age+' سنة' : '-';
+      document.getElementById('modalPatientTotalVisits').textContent = p.totalVisits||0;
+      document.getElementById('modalPatientAddress').textContent = p.address||'-';
+      const visits = p.appointments || [];
+      visits.sort((a,b) => (b.date||'').localeCompare(a.date||''));
+      let html = '';
+      visits.forEach((v, idx) => {
+        const hasNote = v.note && v.note.trim().length > 0;
+        const hasImages = v.images && v.images.length > 0;
+        const hasContent = hasNote || hasImages;
+        const imagesJson = hasImages ? encodeURIComponent(JSON.stringify(v.images)) : '';
+        const prescription = v.prescription || '';
+        html += `<tr>
+          <td class="py-1">${idx+1}</td>
+          <td>${formatDateAr(v.date)}</td>
+          <td>${v.visitType||'-'}</td>
+          <td>${v.slot==='Morning'?'صباحاً':'مساءً'}</td>
+          <td>${hasContent || prescription ? `<button class="view-note-btn" 
+            data-note="${escapeHtml(v.note||'')}" 
+            data-prescription="${escapeHtml(prescription)}"
+            data-date="${formatDateAr(v.date)}" 
+            data-type="${v.visitType}"
+            data-images="${imagesJson}"
+            title="عرض الملاحظة والصور" style="font-size:.75rem;color:var(--primary);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-family:inherit">
+            <i class="fas fa-eye"></i> عرض${hasImages ? ` <span style="font-size:.68rem;background:var(--primary-light);padding:1px 5px;border-radius:8px;color:var(--primary);">${v.images.length} <i class="fas fa-image" style="font-size:.6rem;"></i></span>` : ''}</button>` : '<span style="color:var(--text-muted);font-size:.75rem">-</span>'}</td>
+          <td><button class="edit-note-btn" data-patient-id="${patientId}" data-visit-idx="${idx}" title="تعديل الملاحظة والصور" style="font-size:.75rem;color:var(--primary);text-decoration:underline;cursor:pointer;background:none;border:none;padding:0;font-family:inherit"><i class="fas fa-pen"></i></button></td>
+        </tr>`;
+      });
+      if (!visits.length) html = '<tr><td colspan="6" style="text-align:center;padding:16px 0;color:var(--text-muted)">لا توجد زيارات</td></tr>';
+      document.getElementById('modalVisitsTableBody').innerHTML = html;
+      
+      // إضافة event listeners للأزرار الجديدة
+      document.querySelectorAll('.view-note-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          let images = [];
+          try { if (this.dataset.images) images = JSON.parse(decodeURIComponent(this.dataset.images)); } catch(er) {}
+          const visitData = {
+            note: this.dataset.note,
+            prescription: this.dataset.prescription,
+            dateFormatted: this.dataset.date,
+            visitType: this.dataset.type,
+            images: images
+          };
+          showNote(visitData);
+        });
+      });
+      
+      document.querySelectorAll('.edit-note-btn').forEach(btn => {
+        btn.addEventListener('click', function(e) {
+          e.preventDefault();
+          const patientId = this.dataset.patientId;
+          const visitIdx = parseInt(this.dataset.visitIdx);
+          openAddNoteModal(patientId, visitIdx);
+        });
+      });
+      
+      document.getElementById('patientDetailsModal').classList.remove('hidden');
+    };
+
+    window.closePatientDetailsModal = () => document.getElementById('patientDetailsModal').classList.add('hidden');
+    document.getElementById('closePatientDetailsModalBtn')?.addEventListener('click', closePatientDetailsModal);
+
+    window.showNote = function(visitData) {
+      document.getElementById('noteContent').textContent = visitData.note || 'لا توجد ملاحظة';
+      document.getElementById('noteVisitInfo').textContent = `تاريخ: ${visitData.dateFormatted} | نوع: ${visitData.visitType}`;
+      
+      // عرض الوصفة الطبية
+      const prescriptionSection = document.getElementById('prescriptionSection');
+      const prescriptionContent = document.getElementById('prescriptionContent');
+      if (visitData.prescription && visitData.prescription.trim()) {
+        prescriptionSection.style.display = 'block';
+        prescriptionContent.textContent = visitData.prescription;
+      } else {
+        prescriptionSection.style.display = 'none';
+      }
+
+      // تهيئة حقل واتساب (دمج الملاحظة والوصفة)
+      let whatsappMsg = '';
+      if (visitData.prescription && visitData.prescription.trim()) whatsappMsg += `*الوصفة الطبية:*\n${visitData.prescription}\n\n`;
+      if (visitData.note && visitData.note.trim()) whatsappMsg += `*الملاحظات:*\n${visitData.note}`;
+      document.getElementById('whatsappMsgInput').value = whatsappMsg.trim();
+      
+      // عرض الصور (روابط Drive)
+      const imagesSection = document.getElementById('noteImagesSection');
+      const imagesView = document.getElementById('noteImagesView');
+      const whatsappImagesSelect = document.getElementById('whatsappImagesSelect');
+      const whatsappImagesThumbnails = document.getElementById('whatsappImagesThumbnails');
+      
+      const images = visitData.images || [];
+      if (images.length) {
+        imagesSection.style.display = 'block';
+        imagesView.innerHTML = images.map((img, idx) => {
+          // دعم الروابط الجديدة والقديمة (dataUrl)
+          const isDrive = !!(img.driveUrl || img.downloadUrl);
+          if (isDrive) {
+            return `<a href="${img.driveUrl || img.downloadUrl}" target="_blank" 
+              style="display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;border-radius:10px;border:1.5px solid var(--border);aspect-ratio:1;background:var(--primary-faint);padding:8px;text-decoration:none;">
+              <i class="fab fa-google-drive" style="color:#34a853;font-size:1.6rem;"></i>
+              <span style="font-size:.62rem;color:var(--text-muted);text-align:center;word-break:break-all;">${escapeHtml((img.name||'صورة').substring(0,18))}</span>
+              <span style="font-size:.58rem;color:var(--primary);font-weight:700;">فتح / تحميل</span>
+            </a>`;
+          } else {
+            // dataUrl قديم
+            return `<div style="border-radius:10px;overflow:hidden;border:1.5px solid var(--border);aspect-ratio:1;cursor:pointer;" onclick="viewImageFromNote(${idx}, ${JSON.stringify(images).replace(/"/g,'&quot;')})">
+              <img src="${img.dataUrl}" style="width:100%;height:100%;object-fit:cover;" title="${escapeHtml(img.name||'صورة')}">
+            </div>`;
+          }
+        }).join('');
+
+        // روابط واتساب
+        whatsappImagesSelect.style.display = 'block';
+        whatsappImagesThumbnails.innerHTML = images.map((img, idx) => {
+          const isDrive = !!(img.driveUrl || img.downloadUrl);
+          if (isDrive) {
+            return `<a href="${img.driveUrl}" target="_blank"
+              style="width:50px;height:50px;border-radius:6px;overflow:hidden;border:2px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;background:var(--primary-faint);">
+              <i class="fab fa-google-drive" style="color:#34a853;font-size:1.2rem;"></i>
+            </a>`;
+          } else {
+            return `<div style="width:50px;height:50px;border-radius:6px;overflow:hidden;border:2px solid transparent;cursor:pointer;flex-shrink:0;" 
+              onclick="this.parentElement.querySelectorAll('div').forEach(d=>d.style.borderColor='transparent');this.style.borderColor='var(--primary)';">
+              <img src="${img.dataUrl}" style="width:100%;height:100%;object-fit:cover;">
+            </div>`;
+          }
+        }).join('');
+      } else {
+        imagesSection.style.display = 'none';
+        whatsappImagesSelect.style.display = 'none';
+      }
+
+      // إعداد زر الإرسال
+      const sendBtn = document.getElementById('sendToWhatsappBtn');
+      sendBtn.onclick = () => {
+        let msg = document.getElementById('whatsappMsgInput').value;
+        const phone = normalizePhone(document.getElementById('modalPatientPhone').textContent);
+        
+        // إضافة روابط Drive إن وجدت
+        const driveImages = images.filter(i => i.driveUrl || i.downloadUrl);
+        if (driveImages.length > 0) {
+          msg += `\n\n*صور الزيارة (${driveImages.length} صورة):*\n`;
+          driveImages.forEach((img, i) => { msg += `صورة ${i+1}: ${img.driveUrl}\n`; });
+        }
+        
+        const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(msg.trim())}`;
+        window.open(whatsappUrl, '_blank');
+      };
+
+      const noteModal = document.getElementById('noteModal');
+      noteModal.classList.remove('modal-hidden');
+      noteModal.classList.add('modal-visible');
+    };
+
+    // عارض الصور المكبّرة
+    window.viewImage = function(idx, source) {
+      const img = pendingImages[idx];
+      if (!img) return;
+      if (img.pending) {
+        document.getElementById('imageViewerImg').src = img.previewUrl;
+      } else if (img.dataUrl) {
+        document.getElementById('imageViewerImg').src = img.dataUrl;
+      } else {
+        window.open(img.driveUrl || img.downloadUrl, '_blank'); return;
+      }
+      document.getElementById('imageViewerCaption').textContent = img.name || 'صورة';
+      const modal = document.getElementById('imageViewerModal');
+      modal.classList.remove('modal-hidden');
+      modal.classList.add('modal-visible');
+    };
+
+    window.viewImageFromNote = function(idx, images) {
+      const img = images[idx];
+      if (!img) return;
+      if (img.driveUrl || img.downloadUrl) {
+        window.open(img.driveUrl || img.downloadUrl, '_blank'); return;
+      }
+      if (img.dataUrl) {
+        document.getElementById('imageViewerImg').src = img.dataUrl;
+        document.getElementById('imageViewerCaption').textContent = img.name || 'صورة';
+        const modal = document.getElementById('imageViewerModal');
+        modal.classList.remove('modal-hidden'); modal.classList.add('modal-visible');
+      }
+    };
+
+    window.closeImageViewer = function() {
+      const modal = document.getElementById('imageViewerModal');
+      modal.classList.remove('modal-visible');
+      modal.classList.add('modal-hidden');
+    };
+    window.closeNoteModal = function() { 
+      const noteModal = document.getElementById('noteModal');
+      noteModal.classList.remove('modal-visible');
+      noteModal.classList.add('modal-hidden');
+    };
+
+    // ==================== Google Drive Integration ====================
+    const GDRIVE_CLIENT_ID = '413111986162-m1h8uobsdhk8m8olb22jmsjg2rfjkfrn.apps.googleusercontent.com';
+    const GDRIVE_SCOPES    = 'https://www.googleapis.com/auth/drive.file';
+    const GDRIVE_FOLDER    = 'DocBook_Medical_Images'; // اسم المجلد على Drive
+
+    let gdriveToken = null;   // access token المؤقت
+    let gapiReady   = false;
+
+    // تحميل gapi عند فتح الصفحة
+    window.addEventListener('load', function() {
+      if (typeof gapi !== 'undefined') {
+        gapi.load('client', function() {
+          gapi.client.init({ discoveryDocs: [] }).then(() => { gapiReady = true; });
+        });
+      }
+    });
+
+    // طلب OAuth Token عبر Google Identity Services
+    function requestGdriveToken() {
+      return new Promise((resolve, reject) => {
+        if (gdriveToken) { resolve(gdriveToken); return; }
+        if (typeof google === 'undefined') { reject(new Error('Google Identity غير محمّل بعد')); return; }
+        const client = google.accounts.oauth2.initTokenClient({
+          client_id: GDRIVE_CLIENT_ID,
+          scope: GDRIVE_SCOPES,
+          callback: (resp) => {
+            if (resp.error) { reject(new Error(resp.error)); return; }
+            gdriveToken = resp.access_token;
+            // Token ينتهي بعد ساعة — نمسحه تلقائياً
+            setTimeout(() => { gdriveToken = null; }, (resp.expires_in - 60) * 1000);
+            resolve(gdriveToken);
+          }
+        });
+        client.requestAccessToken({ prompt: 'consent' });
+      });
+    }
+
+    // إيجاد أو إنشاء مجلد على Drive
+    async function getOrCreateFolder(token, folderName) {
+      // بحث عن مجلد موجود
+      const searchRes = await fetch(
+        `https://www.googleapis.com/drive/v3/files?q=name='${folderName}' and mimeType='application/vnd.google-apps.folder' and trashed=false&fields=files(id,name)`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const searchData = await searchRes.json();
+      if (searchData.files && searchData.files.length > 0) return searchData.files[0].id;
+
+      // إنشاء مجلد جديد
+      const createRes = await fetch('https://www.googleapis.com/drive/v3/files', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: folderName, mimeType: 'application/vnd.google-apps.folder' })
+      });
+      const created = await createRes.json();
+      return created.id;
+    }
+
+    // رفع ملف واحد إلى Drive وإرجاع رابط المشاركة
+    async function uploadFileToDrive(token, folderId, file, fileName) {
+      // Multipart upload
+      const metadata = { name: fileName, parents: [folderId] };
+      const boundary = '-------314159265358979323846';
+      const delimiter = `\r\n--${boundary}\r\n`;
+      const closeDelim = `\r\n--${boundary}--`;
+
+      // قراءة الملف كـ ArrayBuffer
+      const fileContent = await new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload  = (e) => resolve(e.target.result);
+        r.onerror = reject;
+        r.readAsArrayBuffer(file);
+      });
+
+      const metadataPart = delimiter + 'Content-Type: application/json\r\n\r\n' + JSON.stringify(metadata) + delimiter + `Content-Type: ${file.type}\r\n\r\n`;
+      const encoder = new TextEncoder();
+      const metadataBytes = encoder.encode(metadataPart);
+      const closingBytes  = encoder.encode(closeDelim);
+
+      // دمج الأجزاء
+      const body = new Uint8Array(metadataBytes.length + fileContent.byteLength + closingBytes.length);
+      body.set(metadataBytes, 0);
+      body.set(new Uint8Array(fileContent), metadataBytes.length);
+      body.set(closingBytes, metadataBytes.length + fileContent.byteLength);
+
+      const uploadRes = await fetch(
+        `https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id,name,webViewLink`,
+        {
+          method: 'POST',
+          headers: { Authorization: `Bearer ${token}`, 'Content-Type': `multipart/related; boundary="${boundary}"` },
+          body: body
+        }
+      );
+      const uploaded = await uploadRes.json();
+      if (!uploaded.id) throw new Error('فشل رفع الملف');
+
+      // تعيين صلاحية عرض عامة للمريض
+      await fetch(`https://www.googleapis.com/drive/v3/files/${uploaded.id}/permissions`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'reader', type: 'anyone' })
+      });
+
+      // رابط التحميل المباشر
+      const directLink = `https://drive.google.com/uc?export=download&id=${uploaded.id}`;
+      const viewLink   = `https://drive.google.com/file/d/${uploaded.id}/view`;
+
+      return { id: uploaded.id, driveUrl: viewLink, downloadUrl: directLink, name: fileName };
+    }
+
+    // رفع مجموعة صور — مع تقدم وإشعارات
+    async function uploadImagesToDrive(files) {
+      showUploadProgress(true, 0, files.length);
+      try {
+        const token    = await requestGdriveToken();
+        const folderId = await getOrCreateFolder(token, GDRIVE_FOLDER);
+        const results  = [];
+
+        for (let i = 0; i < files.length; i++) {
+          showUploadProgress(true, i + 1, files.length);
+          const f = files[i];
+          const ts = Date.now();
+          const ext = f.name.split('.').pop() || 'jpg';
+          const safeName = `medical_${ts}_${i+1}.${ext}`;
+          const result = await uploadFileToDrive(token, folderId, f, safeName);
+          results.push({ ...result, originalName: f.name });
+        }
+
+        showUploadProgress(false);
+        return results;
+      } catch(err) {
+        showUploadProgress(false);
+        throw err;
+      }
+    }
+
+    function showUploadProgress(show, current = 0, total = 0) {
+      let bar = document.getElementById('driveUploadProgress');
+      if (!bar) {
+        bar = document.createElement('div');
+        bar.id = 'driveUploadProgress';
+        bar.style.cssText = `
+          position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+          background:var(--surface); border:1.5px solid var(--border);
+          border-radius:16px; padding:20px 28px; z-index:9999;
+          box-shadow:var(--shadow-lg); text-align:center; min-width:220px;
+        `;
+        document.body.appendChild(bar);
+      }
+      if (!show) { bar.remove(); return; }
+      bar.innerHTML = `
+        <i class="fab fa-google-drive" style="font-size:2rem;color:#34a853;margin-bottom:10px;display:block;"></i>
+        <div style="font-weight:700;color:var(--text-primary);margin-bottom:6px;">جاري الرفع على Google Drive...</div>
+        <div style="font-size:.82rem;color:var(--text-muted);">الصورة ${current} من ${total}</div>
+        <div style="margin-top:10px;background:var(--border);border-radius:8px;height:6px;overflow:hidden;">
+          <div style="height:100%;background:var(--primary);border-radius:8px;width:${total ? (current/total*100) : 0}%;transition:width .3s;"></div>
+        </div>
+      `;
+    }
+
+    // ==================== نهاية Google Drive Integration ====================
+
+    // متغير لتخزين الصور المؤقتة أثناء التحرير
+    // كل عنصر: { driveUrl, downloadUrl, name, originalName, id } أو { pending: true, file: File, previewUrl: objectURL }
+    let pendingImages = [];
+    let pendingFiles  = []; // ملفات لم تُرفع بعد (File objects)
+
+    // فتح input الملف
+    window.triggerImageUpload = function() {
+      document.getElementById('noteImageInput').click();
+    };
+
+    window.openAddNoteModal = function(patientId, visitIndex) {
+      document.getElementById('notePatientId').value = patientId;
+      document.getElementById('noteVisitIndex').value = visitIndex;
+      const p = allPatients[patientId];
+      const visit = p && p.appointments && p.appointments[visitIndex];
+      document.getElementById('noteText').value = (visit && visit.note) ? visit.note : '';
+      document.getElementById('prescriptionText').value = (visit && visit.prescription) ? visit.prescription : '';
+      
+      // تحميل الصور الموجودة (روابط Drive)
+      pendingImages = (visit && visit.images) ? [...visit.images] : [];
+      pendingFiles  = [];
+      renderNoteImagesPreview();
+
+      const addNoteModal = document.getElementById('addNoteModal');
+      addNoteModal.classList.remove('modal-hidden');
+      addNoteModal.classList.add('modal-visible');
+    };
+
+    window.closeAddNoteModal = function() {
+      const addNoteModal = document.getElementById('addNoteModal');
+      addNoteModal.classList.remove('modal-visible');
+      addNoteModal.classList.add('modal-hidden');
+      // تحرير objectURLs المؤقتة
+      pendingImages.filter(i => i.pending).forEach(i => URL.revokeObjectURL(i.previewUrl));
+      pendingImages = [];
+      pendingFiles  = [];
+      renderNoteImagesPreview();
+    };
+
+    // معالج رفع الصور — يضيف معاينة فورية ويخزن الملف
+    document.addEventListener('DOMContentLoaded', function() {
+      const imageInput = document.getElementById('noteImageInput');
+      const uploadZone = document.getElementById('imageUploadZone');
+
+      imageInput?.addEventListener('change', function(e) {
+        addFilesToPending(Array.from(e.target.files));
+        imageInput.value = '';
+      });
+
+      // Drag & Drop
+      uploadZone?.addEventListener('dragover', function(e) {
+        e.preventDefault();
+        this.style.background = 'var(--primary-light)';
+        this.style.borderColor = 'var(--primary)';
+      });
+      uploadZone?.addEventListener('dragleave', function() {
+        this.style.background = 'var(--primary-faint)';
+        this.style.borderColor = 'var(--border-strong)';
+      });
+      uploadZone?.addEventListener('drop', function(e) {
+        e.preventDefault();
+        this.style.background = 'var(--primary-faint)';
+        this.style.borderColor = 'var(--border-strong)';
+        addFilesToPending(Array.from(e.dataTransfer.files).filter(f => f.type.startsWith('image/')));
+      });
+    });
+
+    function addFilesToPending(files) {
+      files.forEach(file => {
+        if (file.size > 10 * 1024 * 1024) { showToast('حجم الصورة يجب أن يكون أقل من 10MB', 'error'); return; }
+        if (!file.type.startsWith('image/')) return;
+        const previewUrl = URL.createObjectURL(file);
+        pendingImages.push({ pending: true, file: file, previewUrl: previewUrl, name: file.name });
+      });
+      renderNoteImagesPreview();
+    }
+
+    function renderNoteImagesPreview() {
+      const preview = document.getElementById('noteImagesPreview');
+      const grid    = document.getElementById('noteImagesGrid');
+      if (!pendingImages.length) { preview.style.display = 'none'; return; }
+      preview.style.display = 'block';
+      grid.innerHTML = pendingImages.map((img, idx) => {
+        const src    = img.pending ? img.previewUrl : (img.driveUrl || img.downloadUrl || '');
+        const badge  = img.pending
+          ? `<div style="position:absolute;top:4px;right:4px;background:#f59e0b;color:white;font-size:.55rem;padding:2px 5px;border-radius:4px;font-weight:700;">انتظار</div>`
+          : `<div style="position:absolute;top:4px;right:4px;background:#34a853;color:white;font-size:.55rem;padding:2px 5px;border-radius:4px;font-weight:700;"><i class="fab fa-google-drive"></i></div>`;
+        return `<div style="position:relative;border-radius:10px;overflow:hidden;border:1.5px solid var(--border);aspect-ratio:1;cursor:pointer;" onclick="previewPendingImage(${idx})">
+          ${img.pending 
+            ? `<img src="${img.previewUrl}" style="width:100%;height:100%;object-fit:cover;">`
+            : `<div style="width:100%;height:100%;background:var(--primary-faint);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;">
+                <i class="fab fa-google-drive" style="color:#34a853;font-size:1.4rem;"></i>
+                <span style="font-size:.6rem;color:var(--text-muted);text-align:center;word-break:break-all;">${escapeHtml((img.name||'').substring(0,20))}</span>
+               </div>`
+          }
+          ${badge}
+          <button onclick="event.stopPropagation();removePendingImage(${idx})" style="position:absolute;bottom:4px;left:4px;width:22px;height:22px;border-radius:50%;background:var(--red);color:white;border:none;cursor:pointer;font-size:.65rem;display:flex;align-items:center;justify-content:center;"><i class="fas fa-times"></i></button>
+        </div>`;
+      }).join('');
+    }
+
+    window.previewPendingImage = function(idx) {
+      const img = pendingImages[idx];
+      if (!img) return;
+      if (img.pending) {
+        document.getElementById('imageViewerImg').src = img.previewUrl;
+        document.getElementById('imageViewerCaption').textContent = img.name || 'صورة (لم تُرفع بعد)';
+        const modal = document.getElementById('imageViewerModal');
+        modal.classList.remove('modal-hidden'); modal.classList.add('modal-visible');
+      } else {
+        // فتح رابط Drive مباشرة
+        window.open(img.driveUrl || img.downloadUrl, '_blank');
+      }
+    };
+
+    window.removePendingImage = function(idx) {
+      const img = pendingImages[idx];
+      if (img && img.pending) URL.revokeObjectURL(img.previewUrl);
+      pendingImages.splice(idx, 1);
+      renderNoteImagesPreview();
+    };
+
+    // ===================== الحفظ مع رفع على Drive =====================
+    async function handleSaveNote(sendToWhatsapp = false) {
+      const patientId  = document.getElementById('notePatientId').value;
+      const visitIndex = parseInt(document.getElementById('noteVisitIndex').value);
+      const note       = document.getElementById('noteText').value.trim();
+      const prescription = document.getElementById('prescriptionText').value.trim();
+      
+      if (!patientId || !allPatients[patientId] || !allPatients[patientId].appointments || !allPatients[patientId].appointments[visitIndex]) return;
+
+      // الصور التي تحتاج رفع
+      const toUpload = pendingImages.filter(i => i.pending);
+
+      if (toUpload.length > 0) {
+        // تحقق من وجود Google APIs
+        if (typeof google === 'undefined') {
+          showToast('جاري تحميل Google APIs... أعد المحاولة بعد لحظة', 'error');
+          return;
+        }
+        try {
+          const files   = toUpload.map(i => i.file);
+          const uploaded = await uploadImagesToDrive(files);
+          // استبدل العناصر الـ pending بالروابط الفعلية
+          let uploadIdx = 0;
+          for (let i = 0; i < pendingImages.length; i++) {
+            if (pendingImages[i].pending) {
+              URL.revokeObjectURL(pendingImages[i].previewUrl);
+              pendingImages[i] = uploaded[uploadIdx++];
+            }
+          }
+          renderNoteImagesPreview();
+        } catch(err) {
+          console.error(err);
+          showToast('خطأ في رفع الصور: ' + (err.message || 'تأكد من تسجيل الدخول بـ Google'), 'error');
+          return;
+        }
+      }
+
+      const p = allPatients[patientId];
+      p.appointments[visitIndex].note         = note;
+      p.appointments[visitIndex].prescription = prescription;
+      // حفظ الروابط بدل dataUrls
+      p.appointments[visitIndex].images = pendingImages.map(i => ({
+        id:          i.id || '',
+        driveUrl:    i.driveUrl || '',
+        downloadUrl: i.downloadUrl || '',
+        name:        i.name || i.originalName || 'صورة'
+      }));
+      
+      lsSet(PATIENTS_STORAGE_KEY, allPatients); // local cache
+      fbSavePatient(allPatients[patientId]).catch(e => console.error('Firebase save error:', e));
+      showToast('تم الحفظ بنجاح' + (toUpload.length ? ' ورفع الصور على Drive' : ''), 'success');
+      
+      if (sendToWhatsapp) {
+        const phone = normalizePhone(p.phone);
+        let fullMsg = '';
+        if (prescription) fullMsg += `*الوصفة الطبية:*\n${prescription}\n\n`;
+        if (note)         fullMsg += `*الملاحظات:*\n${note}\n\n`;
+        
+        // إضافة روابط الصور
+        const driveLinks = p.appointments[visitIndex].images;
+        if (driveLinks && driveLinks.length > 0) {
+          fullMsg += `*صور الزيارة (${driveLinks.length} صورة):*\n`;
+          driveLinks.forEach((img, i) => {
+            fullMsg += `صورة ${i+1}: ${img.driveUrl}\n`;
+          });
+        }
+
+        const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(fullMsg.trim())}`;
+        window.open(whatsappUrl, '_blank');
+      }
+      
+      closeAddNoteModal();
+      openPatientDetailsModal(patientId);
+    }
+
+    document.getElementById('saveNoteBtn')?.addEventListener('click', () => handleSaveNote(false));
+    document.getElementById('saveAndWhatsappBtn')?.addEventListener('click', () => handleSaveNote(true));
+
+    // ==================== التنقل بين الأقسام ====================
+    function setActiveSection(section) {
+      currentSection = section;
+      document.querySelectorAll('.sidebar-item').forEach(el => el.classList.remove('active'));
+      document.getElementById(`sidebar${section.charAt(0).toUpperCase()+section.slice(1)}`)?.classList.add('active');
+      document.querySelectorAll('.bottom-nav-item').forEach(el => el.classList.remove('active'));
+      document.getElementById(`mobile${section.charAt(0).toUpperCase()+section.slice(1)}`)?.classList.add('active');
+      document.querySelectorAll('section').forEach(el => el.classList.add('hidden'));
+      if (section === 'calendar') document.getElementById('calendarSection').classList.remove('hidden');
+      else if (section === 'patients') { 
+        document.getElementById('patientBookSection').classList.remove('hidden'); 
+        renderPatientBook(); 
+      }
+      else if (section === 'stats') { 
+        document.getElementById('statsSection').classList.remove('hidden'); 
+        document.querySelectorAll('#statsSection .stat-card').forEach(card => {
+          card.classList.add('fade-in');
+          setTimeout(() => card.classList.remove('fade-in'), 500);
+        });
+        updateStats(true); 
+      }
+    }
+
+    // ==================== تحديث تلقائي كل 5 ثوان ====================
+    function autoRefresh() {
+      loadData();
+      if (currentSection === 'stats') updateStats(false);
+      if (currentSection === 'patients') renderPatientBook();
+      if (currentSection === 'calendar' && selectedDayStr) renderAgendaForDay(selectedDayStr);
+    }
+
+    // ربط الأحداث
+    document.getElementById('sidebarCalendar')?.addEventListener('click', () => setActiveSection('calendar'));
+    document.getElementById('sidebarPatients')?.addEventListener('click', () => setActiveSection('patients'));
+    document.getElementById('sidebarStats')?.addEventListener('click', () => setActiveSection('stats'));
+    document.getElementById('mobileCalendar')?.addEventListener('click', () => setActiveSection('calendar'));
+    document.getElementById('mobilePatients')?.addEventListener('click', () => setActiveSection('patients'));
+    document.getElementById('mobileStats')?.addEventListener('click', () => setActiveSection('stats'));
+
+    document.getElementById('prevMonthBtn')?.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth()-1); renderCalendar(); });
+    document.getElementById('nextMonthBtn')?.addEventListener('click', () => { currentDate.setMonth(currentDate.getMonth()+1); renderCalendar(); });
+    document.getElementById('showDayDetailsBtn')?.addEventListener('click', showDayDetails);
+    document.getElementById('patientBookSearch')?.addEventListener('input', renderPatientBook);
+
+    document.getElementById('dayDetailsModal')?.addEventListener('click', function(e) {
+      if (e.target === this) closeDayDetailsModal();
+    });
+
+    document.getElementById('noteModal')?.addEventListener('click', function(e) {
+      if (e.target === this) closeNoteModal();
+    });
+
+    document.getElementById('addNoteModal')?.addEventListener('click', function(e) {
+      if (e.target === this) closeAddNoteModal();
+    });
+
+    // تهيئة
+    document.addEventListener('DOMContentLoaded', () => {
+      loadData();
+      setActiveSection('calendar');
+      document.getElementById('doctorHeaderDate').textContent = today.toLocaleDateString('ar-EG', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+    });
+    // ================== الإعدادات ==================
+    const SETTINGS_KEY = 'doctorSettings';
+    let settings = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+
+    function applySettings() {
+      const title = settings.title || 'لوحة الطبيب';
+      document.title = title;
+      const h1 = document.querySelector('header h1');
+      if (h1) h1.textContent = title;
+      const logoIcon = document.querySelector('#headerLogo .fas');
+      const logoContainer = document.querySelector('#headerLogo > div');
+      if (settings.logo && logoContainer) {
+        logoContainer.innerHTML = `<img src="${settings.logo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`;
+      } else if (logoContainer && logoIcon === null) {
+        logoContainer.innerHTML = `<i class="fas fa-user-md"></i>`;
+      }
+    }
+
+    function saveSettingsToLocal(s) {
+      localStorage.setItem(SETTINGS_KEY, JSON.stringify(s));
+    }
+
+    window.openSettingsModal = function() {
+      document.getElementById('settingsTitleInput').value = settings.title || 'لوحة الطبيب';
+      const previewImg  = document.getElementById('logoPreviewImg');
+      const previewIcon = document.getElementById('logoPreviewIcon');
+      const removeBtn   = document.getElementById('removeLogoBtn');
+      if (settings.logo) {
+        previewImg.src = settings.logo; previewImg.classList.remove('hidden');
+        previewIcon.classList.add('hidden'); removeBtn.classList.remove('hidden');
+      } else {
+        previewImg.classList.add('hidden'); previewIcon.classList.remove('hidden'); removeBtn.classList.add('hidden');
+      }
+      document.getElementById('settingsModal').classList.remove('hidden');
+    };
+
+    window.closeSettingsModal = function() {
+      document.getElementById('settingsModal').classList.add('hidden');
+    };
+
+    window.saveSettings = function() {
+      const newTitle = document.getElementById('settingsTitleInput').value.trim();
+      if (newTitle) settings.title = newTitle;
+      saveSettingsToLocal(settings);
+      applySettings();
+      closeSettingsModal();
+    };
+
+    window.removeLogo = function() {
+      settings.logo = null;
+      document.getElementById('logoPreviewImg').classList.add('hidden');
+      document.getElementById('logoPreviewIcon').classList.remove('hidden');
+      document.getElementById('removeLogoBtn').classList.add('hidden');
+      document.getElementById('logoFileInput').value = '';
+    };
+
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('logoFileInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = function(ev) {
+          settings.logo = ev.target.result;
+          const previewImg  = document.getElementById('logoPreviewImg');
+          const previewIcon = document.getElementById('logoPreviewIcon');
+          const removeBtn   = document.getElementById('removeLogoBtn');
+          previewImg.src = settings.logo; previewImg.classList.remove('hidden');
+          previewIcon.classList.add('hidden'); removeBtn.classList.remove('hidden');
+        };
+        reader.readAsDataURL(file);
+      });
+      applySettings();
+    });
+
+    // إغلاق مودال الإعدادات بالضغط خارجه
+    document.getElementById('settingsModal')?.addEventListener('click', function(e) {
+      if (e.target === this) closeSettingsModal();
+    });
+
+  </script>
+
+  <!-- ========== DESKTOP FAB SPEED DIAL ========== -->
+  <div id="docFabBackdrop" onclick="closeDocFabDial()"></div>
+  <!-- Pills منفصلة بـ fixed -->
+  <div id="docDesktopPills">
+    <button class="doc-fab-pill" id="deskDocPillNext" onclick="closeDocFabDial();sendNurseAlert('next')">
+      <span class="doc-fab-pill-icon next-p"><i class="fas fa-user-arrow-right"></i></span>
+      <span class="doc-fab-pill-label">أدخل المريض</span>
+    </button>
+    <button class="doc-fab-pill" id="deskDocPillEnter" onclick="closeDocFabDial();sendNurseAlert('enter')">
+      <span class="doc-fab-pill-icon enter-p"><i class="fas fa-door-open"></i></span>
+      <span class="doc-fab-pill-label">استدعاء الممرضة</span>
+    </button>
+    <button class="doc-fab-pill" id="deskDocPillCustom" onclick="closeDocFabDial();sendNurseAlert('custom')">
+      <span class="doc-fab-pill-icon custom-p"><i class="fas fa-star"></i></span>
+      <span class="doc-fab-pill-label" id="customAlertLabelDesk">تنبيه مخصص</span>
+      <span class="doc-fab-pill-sublabel" onclick="event.stopPropagation();closeDocFabDial();openCustomAlertEdit()"><i class="fas fa-pencil-alt"></i></span>
+    </button>
+  </div>
+  <!-- الزر الرئيسي فقط -->
+  <div id="docDesktopSpeedDial">
+    <button class="doc-fab-trigger" id="docDesktopFabMain" onclick="toggleDocFabDial()" title="تنبيه الممرضة">
+      <div class="doc-fab-plus-icon"></div>
+    </button>
+  </div>
+
+  <!-- ========== JS: FAB Speed Dial ========== -->
+  <script>
+  (function(){
+    const dial      = document.getElementById('docDesktopSpeedDial');
+    const mainBtn   = document.getElementById('docDesktopFabMain');
+    const pillNext  = document.getElementById('deskDocPillNext');
+    const pillEnter = document.getElementById('deskDocPillEnter');
+    const pillCustom= document.getElementById('deskDocPillCustom');
+    const allDeskPills = [pillNext, pillEnter, pillCustom];
+    let dialOpen = false, isDragging = false, dragMoved = false;
+    let startX, startY, origLeft, origBottom;
+
+    function showDial() {
+      dial.style.display = window.innerWidth >= 768 ? 'flex' : 'none';
+    }
+    showDial();
+    window.addEventListener('resize', showDial);
+
+    function positionDesktopPills() {
+      const btnRect = mainBtn.getBoundingClientRect();
+      const pills   = document.getElementById('docDesktopPills');
+      const onRight = (btnRect.left + btnRect.width/2) > window.innerWidth / 2;
+      const pillsBottom = window.innerHeight - btnRect.top + 12;
+      if (onRight) {
+        pills.style.right = (window.innerWidth - btnRect.right) + 'px';
+        pills.style.left  = 'auto';
+        pills.style.alignItems = 'flex-end';
+      } else {
+        pills.style.left  = btnRect.left + 'px';
+        pills.style.right = 'auto';
+        pills.style.alignItems = 'flex-start';
+      }
+      pills.style.bottom = pillsBottom + 'px';
+      pills.style.top    = 'auto';
+    }
+
+    // Drag
+    mainBtn.addEventListener('mousedown', function(e) {
+      isDragging = true; dragMoved = false;
+      const rect = dial.getBoundingClientRect();
+      startX = e.clientX; startY = e.clientY;
+      origLeft   = rect.left;
+      origBottom = window.innerHeight - rect.bottom;
+      dial.style.transition = 'none';
+      mainBtn.style.cursor = 'grabbing';
+      e.preventDefault();
+    });
+    document.addEventListener('mousemove', function(e) {
+      if (!isDragging) return;
+      const dx = e.clientX - startX, dy = e.clientY - startY;
+      if (Math.abs(dx) > 4 || Math.abs(dy) > 4) dragMoved = true;
+      let newLeft   = Math.max(8, Math.min(window.innerWidth  - 68, origLeft   + dx));
+      let newBottom = Math.max(8, Math.min(window.innerHeight - 68, origBottom - dy));
+      dial.style.left   = newLeft + 'px';
+      dial.style.bottom = newBottom + 'px';
+      dial.style.right  = 'auto'; dial.style.top = 'auto';
+    });
+    document.addEventListener('mouseup', function() {
+      if (!isDragging) return;
+      isDragging = false;
+      mainBtn.style.cursor = 'grab';
+      if (dialOpen) positionDesktopPills();
+    });
+
+    window.toggleDocFabDial = function() {
+      if (dragMoved) { dragMoved = false; return; }
+      dialOpen = !dialOpen;
+      if (dialOpen) positionDesktopPills();
+      mainBtn.classList.toggle('open', dialOpen);
+      allDeskPills.forEach(p => p.classList.toggle('visible', dialOpen));
+      document.getElementById('docFabBackdrop').classList.toggle('active', dialOpen);
+    };
+    window.closeDocFabDial = function() {
+      dialOpen = false;
+      mainBtn.classList.remove('open');
+      allDeskPills.forEach(p => p.classList.remove('visible'));
+      document.getElementById('docFabBackdrop').classList.remove('active');
+    };
+
+    // Mobile
+    let mobOpen = false;
+    function positionMobDocPills() {
+      const trigger = document.getElementById('mobDocFabTrigger');
+      const pills   = document.getElementById('mobDocPills');
+      const rect    = trigger.getBoundingClientRect();
+      // الزر على اليسار — Pills تمتد لليمين من حافة الزر
+      pills.style.bottom = (window.innerHeight - rect.top + 10) + 'px';
+      pills.style.left   = rect.left + 'px';
+      pills.style.right  = 'auto';
+      pills.style.alignItems = 'flex-start';
+    }
+    window.toggleMobDocFab = function() {
+      mobOpen = !mobOpen;
+      const trigger = document.getElementById('mobDocFabTrigger');
+      const pills   = document.getElementById('mobDocPills');
+      if (mobOpen) positionMobDocPills();
+      trigger.classList.toggle('open', mobOpen);
+      pills.classList.toggle('active', mobOpen);
+    };
+    window.closeMobDocFab = function() {
+      mobOpen = false;
+      document.getElementById('mobDocFabTrigger').classList.remove('open');
+      document.getElementById('mobDocPills').classList.remove('active');
+    };
+    document.addEventListener('click', function(e) {
+      if (mobOpen && !e.target.closest('.mob-doc-fab-container') && !e.target.closest('#mobDocPills')) closeMobDocFab();
+    });
+  })();
+  </script>
+  <!-- مودال تخصيص الزر الثالث -->
+  <div id="customAlertModal" class="hidden fixed inset-0 z-[500] flex items-center justify-center p-4 modal-overlay">
+    <div class="modal-content max-w-sm w-full">
+      <div style="padding:16px;border-bottom:1.5px solid var(--border);display:flex;justify-content:space-between;align-items:center;">
+        <h3 style="font-weight:700;">تخصيص الزر الثالث</h3>
+        <button onclick="closeCustomAlertEdit()" style="background:none;border:none;cursor:pointer;color:var(--text-muted);font-size:1.2rem;"><i class="fas fa-times"></i></button>
+      </div>
+      <div style="padding:16px;display:flex;flex-direction:column;gap:14px;">
+        <div>
+          <label class="form-label">نص الزر</label>
+          <input type="text" id="customAlertTextInput" class="form-input" placeholder="مثال: اتصلي بي" maxlength="20">
+        </div>
+        <div>
+          <label class="form-label">نص الإشعار عند الممرضة</label>
+          <input type="text" id="customAlertDescInput" class="form-input" placeholder="مثال: الدكتور يطلبك" maxlength="40">
+        </div>
+      </div>
+      <div style="padding:16px;border-top:1.5px solid var(--border);display:flex;gap:10px;justify-content:flex-end;">
+        <button onclick="closeCustomAlertEdit()" class="btn-secondary" style="padding:9px 18px;">إلغاء</button>
+        <button onclick="saveCustomAlert()" class="btn-primary" style="padding:9px 18px;">حفظ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========== JS: نظام تنبيه الممرضة ========== -->
+  <script>
+    // ── مفاتيح localStorage ──
+    const NURSE_ALERT_KEY    = 'nurseAlert';
+    const CUSTOM_ALERT_KEY   = 'nurseCustomAlert';
+
+    // ── تهيئة الزر المخصص من localStorage ──
+    let customAlertData = JSON.parse(localStorage.getItem(CUSTOM_ALERT_KEY) || 'null') || { label: 'تنبيه مخصص', desc: 'تنبيه من الدكتور' };
+    function updateCustomLabels(label) {
+      document.querySelectorAll('#customAlertLabel, #customAlertLabelDesk').forEach(el => el.textContent = label);
+    }
+    updateCustomLabels(customAlertData.label);
+
+    // ── إنشاء الأصوات بـ Web Audio API ──
+    function createAudioCtx() { return new (window.AudioContext || window.webkitAudioContext)(); }
+
+    function playSound(type) {
+      try {
+        const ctx = createAudioCtx();
+        const gain = ctx.createGain();
+        gain.connect(ctx.destination);
+        gain.gain.setValueAtTime(0.6, ctx.currentTime);
+
+        if (type === 'next') {
+          // نغمة صاعدة مبهجة — ثلاث نبضات
+          [0, 0.18, 0.36].forEach((t, i) => {
+            const o = ctx.createOscillator();
+            o.connect(gain);
+            o.type = 'sine';
+            o.frequency.setValueAtTime([520, 660, 780][i], ctx.currentTime + t);
+            o.start(ctx.currentTime + t);
+            o.stop(ctx.currentTime + t + 0.15);
+          });
+
+        } else if (type === 'enter') {
+          // نبضتان قصيرتان — تنبيه رسمي
+          [0, 0.25].forEach((t) => {
+            const o = ctx.createOscillator();
+            o.connect(gain);
+            o.type = 'square';
+            o.frequency.setValueAtTime(440, ctx.currentTime + t);
+            gain.gain.setValueAtTime(0.3, ctx.currentTime + t);
+            gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + t + 0.2);
+            o.start(ctx.currentTime + t);
+            o.stop(ctx.currentTime + t + 0.22);
+          });
+
+        } else if (type === 'custom') {
+          // صوت منخفض هادئ — مختلف تماماً
+          const o = ctx.createOscillator();
+          o.connect(gain);
+          o.type = 'triangle';
+          o.frequency.setValueAtTime(300, ctx.currentTime);
+          o.frequency.linearRampToValueAtTime(500, ctx.currentTime + 0.3);
+          gain.gain.setValueAtTime(0.5, ctx.currentTime);
+          gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.6);
+          o.start(ctx.currentTime);
+          o.stop(ctx.currentTime + 0.6);
+        }
+
+        setTimeout(() => ctx.close(), 1500);
+      } catch(e) { console.warn('Audio error:', e); }
+    }
+
+    // ── إرسال التنبيه (من ملف الدكتور) عبر Firebase ──
+    window.sendNurseAlert = function(type) {
+      // وميض بصري على أزرار الـ FAB
+      ['docDesktopFabMain','mobDocFabTrigger'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          el.style.filter = 'brightness(1.5)';
+          setTimeout(() => { el.style.filter = ''; }, 350);
+        }
+      });
+
+      const payload = { type, ts: Date.now() };
+      // إرسال عبر Firebase (يصل لجميع الأجهزة)
+      fbSendNurseAlert(payload).catch(e => console.error('Alert error:', e));
+      // BroadcastChannel للمتصفح نفسه كـ fallback
+      try { new BroadcastChannel('nurseAlerts').postMessage(payload); } catch(e) {}
+    };
+
+    // ── تخصيص الزر الثالث ──
+    window.openCustomAlertEdit = function() {
+      document.getElementById('customAlertTextInput').value = customAlertData.label;
+      document.getElementById('customAlertDescInput').value = customAlertData.desc;
+      document.getElementById('customAlertModal').classList.remove('hidden');
+    };
+    window.closeCustomAlertEdit = function() {
+      document.getElementById('customAlertModal').classList.add('hidden');
+    };
+    window.saveCustomAlert = function() {
+      const label = document.getElementById('customAlertTextInput').value.trim() || 'تنبيه مخصص';
+      const desc  = document.getElementById('customAlertDescInput').value.trim() || 'تنبيه من الدكتور';
+      customAlertData = { label, desc };
+      localStorage.setItem(CUSTOM_ALERT_KEY, JSON.stringify(customAlertData));
+      updateCustomLabels(label);
+      closeCustomAlertEdit();
+    };
+
+
+
+  </script>
+
+  <!-- Footer -->
+  <footer style="text-align:center; padding:18px 20px; border-top:1px solid var(--border); background:var(--surface);">
+    <div style="font-size:.72rem; color:var(--text-muted); font-weight:500; line-height:1.8;">
+      <span style="font-weight:800; color:var(--primary); letter-spacing:.5px;">nawwacode</span>
+      <span style="margin:0 6px; opacity:.4;">·</span>
+      جميع الحقوق محفوظة © 2026
+    </div>
+  </footer>
+
+  <!-- LOGIN LOGIC -->
+  <script>
+  (function() {
+    var PASS = "doctor123";
+    var overlay = document.getElementById("loginOverlay");
+    var errBox  = document.getElementById("ln-error");
+    var eyeBtn  = document.getElementById("ln-eye-toggle");
+    var passInp = document.getElementById("ln-password");
+    var submitBtn = document.getElementById("ln-submit");
+    if (localStorage.getItem("docbook_doctor_auth") === "1") { overlay.classList.add("hidden"); }
+    eyeBtn.addEventListener("click", function() {
+      var isText = passInp.type === "text";
+      passInp.type = isText ? "password" : "text";
+      eyeBtn.classList.toggle("show-pass", !isText);
+    });
+    document.querySelectorAll(".ln-input-wrap input").forEach(function(inp) {
+      inp.addEventListener("focus", function() { var f=inp.closest(".ln-field"); if(f){var l=f.querySelector(".ln-label");if(l)l.style.color="#67e8f9";} });
+      inp.addEventListener("blur",  function() { var f=inp.closest(".ln-field"); if(f){var l=f.querySelector(".ln-label");if(l)l.style.color="";} });
+    });
+    function showErr(m){errBox.textContent=m;errBox.classList.add("show");}
+    function doLogin(){
+      var p=passInp.value;
+      if(!p){showErr("يرجى إدخال كلمة المرور");return;}
+      if(p!==PASS){showErr("كلمة المرور غير صحيحة، حاول مجدداً");passInp.value="";passInp.focus();return;}
+      errBox.classList.remove("show");
+      localStorage.setItem("docbook_doctor_auth","1");
+      overlay.style.transition="opacity 0.5s ease";
+      overlay.style.opacity="0";
+      setTimeout(function(){overlay.classList.add("hidden");},500);
+    }
+    submitBtn.addEventListener("click", function(e) {
+      var rect=submitBtn.getBoundingClientRect();
+      var ripple=document.createElement("span");
+      var size=Math.max(rect.width,rect.height);
+      ripple.classList.add("ln-ripple");
+      ripple.style.cssText="width:"+size+"px;height:"+size+"px;left:"+(e.clientX-rect.left-size/2)+"px;top:"+(e.clientY-rect.top-size/2)+"px;";
+      submitBtn.appendChild(ripple);
+      ripple.addEventListener("animationend",function(){ripple.remove();});
+      doLogin();
+    });
+    passInp.addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
+    document.getElementById("ln-email").addEventListener("keydown",function(e){if(e.key==="Enter")passInp.focus();});
+  })();
+  </script>
+</body>
+</html>
