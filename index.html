@@ -1486,11 +1486,16 @@
           <button onclick="closeAddNoteModal()" class="btn-secondary flex-1">إلغاء</button>
           <button id="saveNoteBtn" class="btn-primary flex-1"><i class="fas fa-save ml-1"></i>حفظ</button>
         </div>
-        <button id="saveAndWhatsappBtn" class="btn-primary" style="width:100%; background:#25d366; border-color:#128c7e; justify-content:center;">
-          <i class="fab fa-whatsapp"></i> حفظ وإرسال روابط الصور للمريض
-        </button>
+        <div class="flex gap-3">
+          <button id="sendOnlyBtn" class="btn-primary flex-1" style="background:#25d366; border-color:#128c7e; justify-content:center;">
+            <i class="fab fa-whatsapp ml-1"></i> إرسال فقط
+          </button>
+          <button id="saveAndWhatsappBtn" class="btn-primary flex-1" style="background:#0d9488; justify-content:center;">
+            <i class="fab fa-whatsapp ml-1"></i> حفظ وإرسال
+          </button>
+        </div>
         <p style="font-size:.65rem; color:var(--text-muted); text-align:center; margin-top:-4px;">
-          * سيتم رفع الصور على Drive وإرسال روابطها عبر واتساب تلقائياً.
+          * "إرسال فقط" يرسل البيانات للمريض دون حفظها في ملف الدكتور.
         </p>
       </div>
     </div>
@@ -1653,25 +1658,28 @@
       let allVisits = [];
 
       Object.values(allPatients).forEach(patient => {
-        totalVisits += patient.totalVisits || 0;
-        if (patient.totalVisits > 1) repeatPatients++;
-        if (patient.lastVisit && patient.lastVisit >= thirtyDaysAgoStr) activeCount++;
+        const visits = patient.appointments || [];
+        totalVisits += visits.length;
+        if (visits.length > 1) repeatPatients++;
         
-        if (patient.appointments) {
-          patient.appointments.forEach(v => {
-            if (v.slot === 'Morning') morningCount++;
-            else if (v.slot === 'Evening') eveningCount++;
-            
-            if (v.source === 'manual') manualCount++;
-            else onlineCount++;
+        // حساب المريض النشط بناءً على آخر زيارة في الـ 30 يوم الماضية
+        const lastVisitDate = visits.reduce((latest, v) => (v.date > latest ? v.date : latest), '');
+        if (lastVisitDate && lastVisitDate >= thirtyDaysAgoStr) activeCount++;
+        
+        visits.forEach(v => {
+          const slot = v.slot || v.Slot;
+          if (slot === 'Morning') morningCount++;
+          else if (slot === 'Evening') eveningCount++;
+          
+          if (v.source === 'manual') manualCount++;
+          else onlineCount++;
 
-            if (v.visitDurationSec) {
-              totalDurationSec += v.visitDurationSec;
-              durationCount++;
-            }
-            allVisits.push({ patientName: patient.name, date: v.date, visitType: v.visitType });
-          });
-        }
+          if (v.visitDurationSec) {
+            totalDurationSec += v.visitDurationSec;
+            durationCount++;
+          }
+          allVisits.push({ patientName: patient.name, date: v.date, visitType: v.visitType });
+        });
       });
 
       allVisits.sort((a,b) => (b.date||'').localeCompare(a.date||''));
@@ -1813,7 +1821,7 @@
       let data = Array(12).fill(0);
       let periods = [];
       
-      const accepted = allRecords.filter(r => r.Status === 'Accepted');
+      const accepted = allRecords.filter(r => r.Status === 'Accepted' || r.Status === 'Visited');
 
       const now = new Date();
       const currentYear = now.getFullYear();
@@ -1916,7 +1924,7 @@
       if (!period) return;
 
       let total = 0, morning = 0, evening = 0, cancelledCount = 0;
-      const accepted = allRecords.filter(r => r.Status === 'Accepted');
+      const accepted = allRecords.filter(r => r.Status === 'Accepted' || r.Status === 'Visited');
       const cancelled = allRecords.filter(r => r.Status === 'Cancelled' || r.Status === 'Rejected');
 
       if (chartData.currentChartPeriod === 'monthly') {
@@ -2738,7 +2746,8 @@
     };
 
     // ===================== الحفظ مع رفع على Drive =====================
-    async function handleSaveNote(sendToWhatsapp = false) {
+    async function handleSaveNote(mode = 'save') {
+      // mode can be: 'save', 'saveAndSend', 'sendOnly'
       const patientId  = document.getElementById('notePatientId').value;
       const visitIndex = parseInt(document.getElementById('noteVisitIndex').value);
       const note       = document.getElementById('noteText').value.trim();
@@ -2746,11 +2755,11 @@
       
       if (!patientId || !allPatients[patientId] || !allPatients[patientId].appointments || !allPatients[patientId].appointments[visitIndex]) return;
 
-      // الصور التي تحتاج رفع
+      const p = allPatients[patientId];
       const toUpload = pendingImages.filter(i => i.pending);
 
+      // إذا كان هناك صور تحتاج رفع، يجب رفعها في كل الحالات (حتى في "إرسال فقط" لنحصل على روابط)
       if (toUpload.length > 0) {
-        // تحقق من وجود Google APIs
         if (typeof google === 'undefined') {
           showToast('جاري تحميل Google APIs... أعد المحاولة بعد لحظة', 'error');
           return;
@@ -2758,7 +2767,6 @@
         try {
           const files   = toUpload.map(i => i.file);
           const uploaded = await uploadImagesToDrive(files);
-          // استبدل العناصر الـ pending بالروابط الفعلية
           let uploadIdx = 0;
           for (let i = 0; i < pendingImages.length; i++) {
             if (pendingImages[i].pending) {
@@ -2774,46 +2782,53 @@
         }
       }
 
-      const p = allPatients[patientId];
-      p.appointments[visitIndex].note         = note;
-      p.appointments[visitIndex].prescription = prescription;
-      // حفظ الروابط بدل dataUrls
-      p.appointments[visitIndex].images = pendingImages.map(i => ({
+      const currentImages = pendingImages.map(i => ({
         id:          i.id || '',
         driveUrl:    i.driveUrl || '',
         downloadUrl: i.downloadUrl || '',
         name:        i.name || i.originalName || 'صورة'
       }));
-      
-      lsSet(PATIENTS_STORAGE_KEY, allPatients); // local cache
-      fbSavePatient(allPatients[patientId]).catch(e => console.error('Firebase save error:', e));
-      showToast('تم الحفظ بنجاح' + (toUpload.length ? ' ورفع الصور على Drive' : ''), 'success');
-      
-      if (sendToWhatsapp) {
+
+      // تنفيذ الحفظ فقط إذا لم يكن الوضع "إرسال فقط"
+      if (mode === 'save' || mode === 'saveAndSend') {
+        p.appointments[visitIndex].note         = note;
+        p.appointments[visitIndex].prescription = prescription;
+        p.appointments[visitIndex].images       = currentImages;
+        
+        lsSet(PATIENTS_STORAGE_KEY, allPatients); // local cache
+        fbSavePatient(allPatients[patientId]).catch(e => console.error('Firebase save error:', e));
+        showToast('تم الحفظ بنجاح' + (toUpload.length ? ' ورفع الصور على Drive' : ''), 'success');
+      }
+
+      // تنفيذ الإرسال إذا كان الوضع "إرسال فقط" أو "حفظ وإرسال"
+      if (mode === 'sendOnly' || mode === 'saveAndSend') {
         const phone = normalizePhone(p.phone);
         let fullMsg = '';
         if (prescription) fullMsg += `*الوصفة الطبية:*\n${prescription}\n\n`;
         if (note)         fullMsg += `*الملاحظات:*\n${note}\n\n`;
         
-        // إضافة روابط الصور
-        const driveLinks = p.appointments[visitIndex].images;
-        if (driveLinks && driveLinks.length > 0) {
-          fullMsg += `*صور الزيارة (${driveLinks.length} صورة):*\n`;
-          driveLinks.forEach((img, i) => {
+        if (currentImages.length > 0) {
+          fullMsg += `*صور الزيارة (${currentImages.length} صورة):*\n`;
+          currentImages.forEach((img, i) => {
             fullMsg += `صورة ${i+1}: ${img.driveUrl}\n`;
           });
         }
 
         const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(fullMsg.trim())}`;
         window.open(whatsappUrl, '_blank');
+        
+        if (mode === 'sendOnly') {
+          showToast('تم الإرسال للمريض (بدون حفظ في ملف الدكتور)', 'info');
+        }
       }
       
       closeAddNoteModal();
       openPatientDetailsModal(patientId);
     }
 
-    document.getElementById('saveNoteBtn')?.addEventListener('click', () => handleSaveNote(false));
-    document.getElementById('saveAndWhatsappBtn')?.addEventListener('click', () => handleSaveNote(true));
+    document.getElementById('saveNoteBtn')?.addEventListener('click', () => handleSaveNote('save'));
+    document.getElementById('saveAndWhatsappBtn')?.addEventListener('click', () => handleSaveNote('saveAndSend'));
+    document.getElementById('sendOnlyBtn')?.addEventListener('click', () => handleSaveNote('sendOnly'));
 
     // ==================== التنقل بين الأقسام ====================
     function setActiveSection(section) {
