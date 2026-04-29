@@ -7,11 +7,11 @@ const STATIC_CACHE = 'docbook-static-v1';
 
 // الملفات التي يتم تخزينها مسبقاً للعمل بدون إنترنت
 const PRECACHE_URLS = [
-  './',
-  './index.html',
-  './manifest.json',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
+  '/Docory/',
+  '/Docory/index.html',
+  '/Docory/manifest.json',
+  '/Docory/icons/icon-192.png',
+  '/Docory/icons/icon-512.png',
 ];
 
 // المصادر الخارجية التي يتم تخزينها عند أول تحميل

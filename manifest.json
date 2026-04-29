@@ -2,24 +2,28 @@
   "name": "DocBook - نظام إدارة المواعيد الطبية",
   "short_name": "DocBook",
   "description": "نظام إدارة المواعيد والمرضى للأطباء",
-  "start_url": "./index.html",
-  "scope": "./",
+  "start_url": "/Docory/",
+  "scope": "/Docory/",
   "display": "standalone",
   "orientation": "portrait-primary",
   "background_color": "#f0fdfa",
   "theme_color": "#0d9488",
   "lang": "ar",
   "dir": "rtl",
-  "categories": ["medical", "productivity", "health"],
+  "categories": [
+    "medical",
+    "productivity",
+    "health"
+  ],
   "icons": [
     {
-      "src": "./icons/icon-192.png",
+      "src": "/Docory/icons/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./icons/icon-512.png",
+      "src": "/Docory/icons/icon-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
@@ -39,8 +43,13 @@
       "name": "المواعيد",
       "short_name": "مواعيد",
       "description": "عرض المواعيد اليوم",
-      "url": "./index.html#appointments",
-      "icons": [{ "src": "./icons/icon-192.png", "sizes": "192x192" }]
+      "url": "/Docory/index.html#appointments",
+      "icons": [
+        {
+          "src": "/Docory/icons/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

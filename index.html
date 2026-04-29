@@ -8,7 +8,7 @@
   <!-- ══════════════════════════════════════════
        PWA — Web App Manifest & Meta Tags
        ══════════════════════════════════════════ -->
-  <link rel="manifest" href="./manifest.json" />
+  <link rel="manifest" href="/Docory/manifest.json" />
 
   <!-- Theme & Status Bar -->
   <meta name="theme-color" content="#0d9488" />
@@ -18,13 +18,13 @@
   <meta name="mobile-web-app-capable" content="yes" />
 
   <!-- Apple Touch Icons -->
-  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
-  <link rel="apple-touch-icon" sizes="192x192" href="./icons/icon-192.png" />
-  <link rel="apple-touch-icon" sizes="512x512" href="./icons/icon-512.png" />
+  <link rel="apple-touch-icon" href="/Docory/icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="192x192" href="/Docory/icons/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="512x512" href="/Docory/icons/icon-512.png" />
 
   <!-- Favicon -->
-  <link rel="icon" type="image/png" sizes="192x192" href="./icons/icon-192.png" />
-  <link rel="shortcut icon" href="./icons/icon-192.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/Docory/icons/icon-192.png" />
+  <link rel="shortcut icon" href="/Docory/icons/icon-192.png" />
 
   <!-- SEO & Description -->
   <meta name="description" content="DocBook — نظام إدارة المواعيد والمرضى للأطباء" />
@@ -5421,7 +5421,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function () {
-        navigator.serviceWorker.register('./sw.js', { scope: './' })
+        navigator.serviceWorker.register('/Docory/sw.js', { scope: '/Docory/' })
           .then(function (reg) {
             console.log('[DocBook] Service Worker registered ✓ scope:', reg.scope);
             reg.addEventListener('updatefound', function () {
